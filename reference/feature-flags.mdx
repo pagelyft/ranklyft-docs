@@ -1,0 +1,78 @@
+---
+title: "Feature Flags"
+description: "Optional features controlled by environment variables. Requires a redeploy to take effect."
+---
+
+RankLyft uses environment-variable-based feature flags to enable optional sections that incur additional DataForSEO API costs. Flags are evaluated at runtime from `NEXT_PUBLIC_` variables, which means they are baked into the JavaScript bundle at build time.
+
+<Warning>
+  Changing a feature flag requires a new deployment to take effect. Updating the environment variable in Vercel alone does not change the behavior of an already-deployed build.
+</Warning>
+
+## Available flags
+
+### `NEXT_PUBLIC_FEATURE_BACKLINKS`
+
+Enables the Backlinks section across the application.
+
+**What it activates:**
+- Backlinks page in each website's sidebar (`/{websiteSlug}/backlinks`)
+- Backlinks summary card on the website Dashboard
+- Backlinks data refresh in the weekly cron job (`/api/cron/refresh-websites`)
+
+**DataForSEO endpoint used:** `backlinks/summary`
+
+**Cost implication:** DataForSEO requires a $100/month minimum commitment to access Backlinks endpoints. Do not enable this flag until you have confirmed that commitment with DataForSEO.
+
+---
+
+### `NEXT_PUBLIC_FEATURE_AI_VISIBILITY`
+
+Enables the AI Visibility section across the application.
+
+**What it activates:**
+- AI Visibility page in each website's sidebar (`/{websiteSlug}/ai-visibility`)
+
+**DataForSEO endpoint used:** AI-related SERP and content APIs
+
+**Cost implication:** Requires a $100/month minimum commitment to DataForSEO's AI data endpoints. Confirm with DataForSEO before enabling.
+
+---
+
+## How flags are checked
+
+Flags are read from `process.env` in the shared `lib/flags.ts` module. Any component or route that conditionally renders feature-flagged UI imports from this file.
+
+```ts
+// lib/flags.ts
+export const FEATURE_BACKLINKS = process.env.NEXT_PUBLIC_FEATURE_BACKLINKS === "true";
+export const FEATURE_AI_VISIBILITY = process.env.NEXT_PUBLIC_FEATURE_AI_VISIBILITY === "true";
+```
+
+The value must be the string `"true"` exactly. Any other value — including `"1"`, `"yes"`, or `"TRUE"` — is treated as disabled.
+
+## Enabling a flag
+
+1. Go to your Vercel project dashboard.
+2. Navigate to **Settings > Environment Variables**.
+3. Add or update the variable, setting its value to `"true"`.
+4. Redeploy the application. The easiest way is to run:
+
+```bash
+vercel deploy --prod --yes
+```
+
+## Disabling a flag
+
+Set the variable's value to anything other than `"true"`, or delete the variable entirely, then redeploy.
+
+<Tip>
+  To test a feature flag on a preview deployment before enabling it in production, set the variable only on the Preview environment scope in Vercel, then deploy a preview with `vercel deploy --yes`.
+</Tip>
+
+## Flag status at a glance
+
+| Flag | Default | Requires DataForSEO commitment |
+|---|---|---|
+| `NEXT_PUBLIC_FEATURE_BACKLINKS` | Disabled | Yes — $100/mo |
+| `NEXT_PUBLIC_FEATURE_AI_VISIBILITY` | Disabled | Yes — $100/mo |

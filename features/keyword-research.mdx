@@ -1,0 +1,58 @@
+---
+title: "Keyword Research"
+description: "Discover new keyword opportunities from a seed term using two modes: keywords containing the seed, and semantically related keywords."
+---
+
+Keyword Research generates a list of keyword ideas from a single seed term. It runs as a standalone research tool — not tied to a specific client website — so you can use it for prospecting, content planning, or gap analysis across any domain.
+
+## Research modes
+
+<Tabs>
+  <Tab title="Containing">
+    **Containing** mode finds keywords that include the seed term as a substring. It queries Google's keyword suggestions API for every variation that literally contains the words you typed.
+
+    Use this mode when you want to:
+    - Find long-tail variations of a core keyword
+    - See how a topic branches into sub-queries
+    - Build a keyword list around a specific product or service name
+
+    Example: seed term `email marketing` returns `email marketing tools`, `email marketing for ecommerce`, `email marketing best practices`, etc.
+  </Tab>
+  <Tab title="Related">
+    **Related** mode finds semantically related keywords based on SERP overlap — queries where the same pages tend to rank. This surfaces terms that are topically connected but may not contain the seed word.
+
+    Use this mode when you want to:
+    - Discover adjacent topics the client should be covering
+    - Find synonyms and alternative phrasings
+    - Identify the broader topic cluster around a core term
+
+    Example: seed term `email marketing` might return `newsletter strategy`, `drip campaigns`, `automation workflows`, even though none of those contain the phrase "email marketing."
+  </Tab>
+</Tabs>
+
+## Table columns
+
+| Column | Description |
+|---|---|
+| Keyword | The keyword suggestion. Links to [Keyword Overview](/features/keyword-overview) for full details. |
+| Intent | Search intent badge: **I** (Informational), **N** (Navigational), **C** (Commercial), **T** (Transactional) |
+| KD% | Keyword Difficulty, 0–100 |
+| Volume | Estimated monthly search volume |
+| CPC | Average cost per click in Google Ads, in USD |
+| Competition | Paid search competition density, 0–1 |
+
+## Exporting data
+
+Click **Export CSV** to download the current result set. The export includes all columns and respects whatever mode (Containing or Related) was active when you ran the search. Use this to hand off a keyword list to a content team or import it into another tool for further analysis.
+
+## Workflow tips
+
+<Tip>
+  Run both modes on the same seed term and compare results. Containing mode gives you the explicit long-tail list; Related mode surfaces the topic cluster. Together they give you a more complete picture of the keyword landscape around a topic.
+</Tip>
+
+**Prioritize by KD% and Volume together.** A keyword with high volume and high KD% may be unreachable for a newer domain. Sort by volume, then filter for KD% below a threshold that matches the client's current authority. Start with achievable terms and layer in competitive targets over time.
+
+**Check Intent before assigning keywords to pages.** Informational keywords belong on blog posts and guides. Commercial and Transactional keywords belong on product and service pages. Matching intent to page type is one of the most reliable ways to improve ranking probability.
+
+**Click through to Keyword Overview for any high-priority term.** The table gives you enough data to filter and prioritize, but Keyword Overview adds the SERP preview, monthly trend chart, and average backlink data you need before making a final recommendation.

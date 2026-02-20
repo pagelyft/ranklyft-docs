@@ -1,0 +1,59 @@
+---
+title: "Adding a website"
+description: "How to add a client domain and what data RankLyft fetches during initial setup."
+---
+
+When you add a website to RankLyft, it kicks off an automatic data fetch for that domain. You don't need to configure anything — RankLyft pulls everything it needs from DataForSEO and saves it to your account.
+
+## How to add a website
+
+<Steps>
+  <Step title="Open the Add Website form">
+    Click the **+** button at the top of the sidebar, or navigate directly to **/new**.
+  </Step>
+
+  <Step title="Enter the domain">
+    Type the domain in bare format. Do not include the protocol or subdomain:
+
+    | Format | Correct? |
+    |---|---|
+    | `example.com` | Yes |
+    | `https://example.com` | No |
+    | `www.example.com` | No |
+    | `blog.example.com` | Only if you want to track the subdomain specifically |
+
+    RankLyft treats the domain as entered, so make sure you enter the root domain unless you specifically want to track a subdomain.
+  </Step>
+
+  <Step title="Add an optional label">
+    You can add a display label — for example, the client's business name — to make the website easier to identify in the sidebar. This is purely cosmetic and does not affect data fetching.
+  </Step>
+
+  <Step title="Submit">
+    Click **Add Website**. The initial data fetch starts immediately.
+  </Step>
+</Steps>
+
+## What gets fetched automatically
+
+When you add a domain, RankLyft runs the following fetches in the background:
+
+| Data | Details |
+|---|---|
+| Domain overview | Domain authority score, estimated monthly traffic, total backlinks, referring domains |
+| Ranked keywords | Up to the top 100 keywords the domain currently ranks for in Google |
+| Top pages | Up to the top 50 pages by estimated organic traffic |
+| Historical data | Monthly traffic and ranking snapshots back to January of the prior year |
+| Position tracking seed | The domain's top-performing keywords are added to Position Tracking automatically |
+
+The full fetch takes **15–30 seconds**. You can navigate away and the data will be ready when you return.
+
+<Info>
+  Newer domains or domains with limited search presence may return fewer than 100 keywords or 50 pages. This is expected — DataForSEO only returns data that exists in its index. As the domain builds more rankings over time, subsequent refreshes will return more results.
+</Info>
+
+## Managing multiple websites
+
+You can add as many websites as your plan supports. Each website has its own independent dashboard, keyword set, and historical data — nothing is shared between websites.
+
+Use the sidebar switcher to move between client websites. See [Managing websites](/getting-started/managing-websites) for more on switching, renaming, and removing domains.

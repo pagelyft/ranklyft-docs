@@ -1,0 +1,67 @@
+---
+title: "Keyword Gap"
+description: "Compare keyword rankings between two domains to find shared opportunities, missing terms, and keywords where only one domain ranks."
+---
+
+Keyword Gap compares the keyword rankings of two domains side by side and lets you filter for exactly the keywords you care about: ones both rank for, ones a competitor ranks for that you don't, or ones only you rank for.
+
+## Setting up a comparison
+
+Enter two domains in bare format and select a mode, then click **Search**.
+
+```
+Domain 1: yourclient.com
+Domain 2: competitor.com
+```
+
+The column headers in the results table update dynamically to show the actual domain names you entered.
+
+## Modes
+
+<Tabs>
+  <Tab title="Shared">
+    Shows keywords where both domains rank in the top 100. Use this to see direct head-to-head competition — where both sites are fighting for the same queries.
+
+    This mode is useful for identifying keywords where the client already has a foothold but ranks below the competitor. These are high-priority targets because the client's page is already indexed and relevant — it just needs improvement.
+  </Tab>
+  <Tab title="Missing">
+    Shows keywords where the competitor ranks but the client does not. Internally, this swaps the target and compares from the competitor's perspective to find competitor-only keywords.
+
+    Use this mode to find content gaps — topics the competitor has covered that the client hasn't. Each row is a potential new page or content expansion opportunity.
+  </Tab>
+  <Tab title="Unique">
+    Shows keywords where only your client's domain ranks. The competitor does not appear in the top 100 for these terms.
+
+    Use this mode to find areas of strength to defend, or to understand what differentiates the client's content from the competitor's.
+  </Tab>
+</Tabs>
+
+## Results table
+
+| Column | Description |
+|---|---|
+| Keyword | The search query. Links to [Keyword Overview](/features/keyword-overview) for full details. |
+| Intent | Search intent badge: **I** (Informational), **N** (Navigational), **C** (Commercial), **T** (Transactional) |
+| [Domain 1] Position | The first domain's current ranking position. Blank if the domain does not rank. |
+| [Domain 2] Position | The second domain's current ranking position. Blank if the domain does not rank. |
+| Volume | Estimated monthly search volume |
+| KD% | Keyword Difficulty, 0–100 |
+| CPC | Average cost per click in Google Ads, in USD |
+
+The Domain 1 and Domain 2 column headers show the actual domains you entered, not generic labels.
+
+## Exporting data
+
+Click **Export CSV** to download the current results. The export includes all columns and reflects the active mode (Shared, Missing, or Unique). Use this to hand off a prioritized keyword list to a content team or to build a slide deck showing the client their gap versus a specific competitor.
+
+## Recommended workflows
+
+**Full gap audit.** Run all three modes against the client's top competitor. Start with Missing to find new content opportunities. Switch to Shared to prioritize existing pages that need position improvement. Review Unique to identify content the client should be protecting.
+
+**Pre-pitch research.** Before an agency pitch, run Keyword Gap between the prospect's domain and their top competitor. Bring the Missing results to the meeting — it shows specific, data-backed opportunities the prospect hasn't capitalized on yet.
+
+**Prioritize by intent and volume.** In Missing mode, sort by Volume descending and filter for Commercial and Transactional intent. These are the highest-value opportunities — high search volume and buying intent that the competitor is capturing and the client is not.
+
+<Tip>
+  Pair Keyword Gap with the Competitors tool. Start in Competitors to identify who the real search competitors are, then run Keyword Gap against the top two or three to find the most impactful content opportunities.
+</Tip>

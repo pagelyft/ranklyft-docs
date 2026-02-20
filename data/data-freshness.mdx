@@ -1,0 +1,78 @@
+---
+title: "Data freshness"
+description: "How current each data type is in RankLyft, and what affects the age of the data you see."
+---
+
+"Fresh data" means different things for different SEO metrics. A domain's backlink count does not need to update daily. A keyword's position on page one can shift overnight. RankLyft's refresh schedule reflects those differences — high-volatility data updates daily, stable data updates weekly.
+
+This page explains how current each data type is and what factors affect its age.
+
+## Freshness by feature
+
+| Feature | Update frequency | Data type | Effective lag |
+|---|---|---|---|
+| Domain Overview | Weekly (Monday) | Pre-indexed | Up to 7 days |
+| Historical Trends | Weekly (Monday) | Pre-indexed | Up to 7 days |
+| Organic Rankings | Weekly (Monday) | Pre-indexed | Up to 7 days + DataForSEO index age |
+| Top Pages | Weekly (Monday) | Pre-indexed | Up to 7 days |
+| Position Tracking | Daily (6 AM UTC) | Live SERP | Up to 24 hours |
+| Keyword Overview | On-demand (always live) | Pre-indexed | DataForSEO index age |
+| Keyword Suggestions | On-demand (always live) | Pre-indexed | DataForSEO index age |
+| Related Keywords | On-demand (always live) | Pre-indexed | DataForSEO index age |
+| Competitors | On-demand (always live) | Pre-indexed | DataForSEO index age |
+| Keyword Gap | On-demand (always live) | Pre-indexed | DataForSEO index age |
+| Backlinks | Weekly (Monday) | Pre-indexed | Up to 7 days + DataForSEO index age |
+| Site Audit | Daily or on-demand | Live crawl | Up to 24 hours |
+| AI Visibility | On-demand | Live query | Real-time |
+
+## Understanding the two sources of lag
+
+### 1. RankLyft's refresh schedule
+
+RankLyft fetches new data on a weekly or daily schedule. Even if DataForSEO's index updated five minutes ago, RankLyft will not display that new data until the next scheduled fetch or a manual refresh.
+
+If you need the absolute latest available data, use the **Refresh** button on any feature page to pull immediately.
+
+### 2. DataForSEO's index age
+
+For pre-indexed data types (Labs, Backlinks), RankLyft receives whatever is currently in DataForSEO's index. DataForSEO updates their index continuously, but there is an inherent lag between when Google crawls a page, when a ranking change takes effect, and when DataForSEO reflects that change.
+
+In practice, DataForSEO's Labs index for organic rankings tends to be a few days to two weeks behind Google's actual current index. This is normal and consistent with what tools like Semrush and Ahrefs report — they all use indexed data with similar lag.
+
+<Info>
+  The combination of RankLyft's weekly cron plus DataForSEO's index lag means organic ranking data can be up to two weeks old in a worst-case scenario. Position Tracking avoids this entirely by hitting Google directly via live SERP queries.
+</Info>
+
+## Position tracking vs. organic rankings
+
+Position Tracking and Organic Rankings both show keyword positions, but they have very different freshness characteristics:
+
+| | Organic Rankings | Position Tracking |
+|---|---|---|
+| Data source | DataForSEO Labs index | Live Google SERP |
+| Update frequency | Weekly | Daily |
+| Maximum keywords | 100 (top 100 by traffic) | Unlimited (you choose) |
+| Freshness | Indexed estimate | Actual current position |
+| Best for | Discovering which keywords the domain ranks for | Monitoring specific keywords day-to-day |
+
+Use Organic Rankings to understand the full keyword footprint. Use Position Tracking to monitor the keywords you actively care about with daily precision.
+
+## Historical data
+
+Historical trends in Domain Overview reflect DataForSEO's historical index, which goes back to January of the prior year. This data is updated weekly but represents point-in-time snapshots, not a continuous daily record. The trend charts show monthly data points, not daily.
+
+## Site audit freshness
+
+Site audits perform a live crawl of the domain at the time of the request. There is no index lag — RankLyft reports what the crawler finds at that moment. Audits run daily (if you have scheduled audits on) or on-demand. Audit results reflect the site as it existed when the crawl ran.
+
+<Tip>
+  If a client has just deployed site changes and wants to verify the fix, run a manual Site Audit refresh rather than waiting for the scheduled crawl.
+</Tip>
+
+## AI Visibility freshness
+
+AI Visibility runs live queries against LLM APIs (ChatGPT, Perplexity, Gemini, etc.) at the moment you request them. Results reflect what those models return right now. Because LLMs update their training data and web indexes on their own schedules, there is no predictable lag — but the data is as current as the LLM allows.
+
+## Backlink freshness
+
+Backlink data from DataForSEO's Backlinks index is continuously updated but tends to lag Google's actual link graph by weeks to months for newly acquired or lost links. This is consistent with industry-standard backlink tools. Use the backlink data for trend analysis and domain-level comparisons, not as a real-time link audit.

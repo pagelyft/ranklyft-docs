@@ -1,0 +1,71 @@
+---
+title: "AI Visibility"
+description: "Track how often a client's domain appears in AI-generated answers across ChatGPT, Google AI Overviews, Gemini, Perplexity, and Claude."
+---
+
+AI Visibility tracks whether a client's domain is being cited by large language models when users ask questions related to their business. As more searches resolve in AI-generated answers rather than traditional blue-link results, this report helps you monitor a channel that standard rank tracking does not cover.
+
+<Warning>
+  AI Visibility is a feature-flagged report. It must be enabled with the `NEXT_PUBLIC_FEATURE_AI_VISIBILITY` environment variable before it appears in the sidebar. Contact your admin if you expect to see this report but don't see it in the navigation.
+</Warning>
+
+## Platforms tracked
+
+RankLyft checks for domain mentions across five AI platforms:
+
+- **ChatGPT** (OpenAI)
+- **Google AI Overviews**
+- **Gemini** (Google)
+- **Perplexity**
+- **Claude** (Anthropic)
+
+Each platform surfaces different answers for the same query, so a domain may appear on some platforms but not others.
+
+## Summary metrics
+
+Four metric cards appear at the top of the AI Visibility page:
+
+| Metric | Description |
+|---|---|
+| Total Mentions | The total number of times the domain was mentioned across all platforms and queries |
+| Citations | The number of mentions where the AI directly cited the domain as a source |
+| Citation Rate | Citations as a percentage of total mentions |
+| Platform Count | The number of distinct AI platforms where the domain appeared |
+
+A high mention count with a low citation rate suggests the AI is referencing the brand in passing but not linking to it as a source. Work on structured content, schema markup, and authoritative reference pages to increase citations.
+
+## Mentions table
+
+The mentions table shows every recorded AI mention with the following columns:
+
+| Column | Description |
+|---|---|
+| Keyword | The search query that triggered the AI response |
+| Platform | The AI platform that generated the answer, displayed as a color-coded badge |
+| Cited | Whether the domain was directly cited as a source (Yes/No) |
+| Answer Snippet | The portion of the AI-generated answer that referenced the domain |
+| Volume | Monthly search volume for the keyword |
+
+Use the Answer Snippet column to understand how AI platforms are characterizing the client's brand and content. Inconsistent or inaccurate characterizations may indicate thin or outdated content that needs updating.
+
+## Top pages table
+
+The top pages table shows which URLs on the domain are most frequently mentioned or cited across AI platforms:
+
+| Column | Description |
+|---|---|
+| URL | The page on the client's domain |
+| Mentions | Total times this URL appeared in AI answers |
+| Citations | Times this URL was cited as a direct source |
+
+Pages with high mentions but low citations are appearing in AI context but not being linked. These pages are good candidates for adding more authoritative, citable content — statistics, original research, definitions, or how-to guides.
+
+<Tip>
+  AI platforms tend to cite content that is clearly structured, factually specific, and up to date. If you want to improve a page's citation rate, focus on adding citable facts, clear authorship signals, and schema markup.
+</Tip>
+
+## How this differs from traditional rankings
+
+Traditional organic rankings track whether a domain appears on the Google SERP for a query. AI Visibility tracks whether the domain appears inside an AI-generated answer — which may or may not include a clickable link. A domain can have strong traditional rankings but zero AI visibility, or vice versa.
+
+Monitor both. As AI search features expand, AI Visibility will become an increasingly important part of the client reporting conversation.

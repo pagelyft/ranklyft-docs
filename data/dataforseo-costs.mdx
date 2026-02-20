@@ -1,0 +1,158 @@
+---
+title: "DataForSEO cost breakdown"
+description: "Per-API pricing tables for every DataForSEO endpoint RankLyft uses, so you can calculate exact costs for your usage."
+---
+
+RankLyft draws from your DataForSEO balance for every API call it makes. This page lists the exact pricing for each endpoint, broken down by how RankLyft uses it.
+
+DataForSEO pricing uses a two-component model for most endpoints: a **task fee** (charged per request) and a **result fee** (charged per row returned). Some endpoints charge a flat rate per request.
+
+## Labs API
+
+Labs endpoints return pre-indexed data. They are fast, inexpensive, and power most of RankLyft's website report features.
+
+### Standard Labs endpoints
+
+| Endpoint | Task fee | Result fee | RankLyft feature |
+|---|---|---|---|
+| `googleRankedKeywordsLive` | $0.01/task | $0.0001/result | Organic Rankings |
+| `googleHistoricalRankOverviewLive` | $0.01/task | $0.0001/result | Historical Trends |
+| `googleRelevantPagesLive` | $0.01/task | $0.0001/result | Top Pages |
+| `googleKeywordOverviewLive` | $0.01/task | $0.0001/result | Keyword Overview |
+| `googleKeywordSuggestions` | $0.01/task | $0.0001/result | Keyword Suggestions |
+| `googleRelatedKeywords` | $0.01/task | $0.0001/result | Related Keywords |
+| `googleCompetitorsDomain` | $0.01/task | $0.0001/result | Competitors |
+| `googleDomainIntersection` | $0.01/task | $0.0001/result | Keyword Gap |
+
+### Domain overview (higher cost)
+
+Domain overview uses a different pricing tier because it returns richer aggregate metrics per domain.
+
+| Endpoint | Task fee | Result fee | RankLyft feature |
+|---|---|---|---|
+| `googleDomainRankOverviewLive` | $0.10/task | $0.001/domain | Domain Overview |
+
+<Info>
+  Domain overview costs 10x the standard Labs task fee. For a single domain, expect $0.101 per call. Across 15 domains fetched weekly, that is about $1.52/month for domain overview alone.
+</Info>
+
+### Estimated Labs cost per domain per week
+
+This assumes RankLyft fetches domain overview, 100 ranked keywords, 50 top pages, and 12 months of historical data per domain:
+
+| API call | Task fee | Result fee | Subtotal |
+|---|---|---|---|
+| Domain overview (1 domain) | $0.10 | $0.001 | $0.101 |
+| Ranked keywords (100 results) | $0.01 | $0.01 | $0.02 |
+| Top pages (50 results) | $0.01 | $0.005 | $0.015 |
+| Historical overview (12 months) | $0.01 | $0.0012 | $0.0112 |
+| **Total per domain per week** | | | **~$0.15** |
+| **Total for 15 domains per month** | | | **~$9.00** |
+
+## SERP API — Position Tracking
+
+Position tracking uses the SERP API's async task endpoint, which performs a real Google search. Pricing varies by how deep into the results you want to check.
+
+| Depth | What it tracks | Cost per keyword | Cost per keyword/month (daily) |
+|---|---|---|---|
+| 10 | Top 10 results (page 1) | $0.0006 | ~$0.018 |
+| 100 | Top 100 results (pages 1–10) | $0.00465 | ~$0.14 |
+
+### Estimated SERP cost examples
+
+| Keywords tracked | Depth | Daily cost | Monthly cost |
+|---|---|---|---|
+| 20 | 10 | $0.012 | $0.36 |
+| 50 | 10 | $0.03 | $0.90 |
+| 100 | 10 | $0.06 | $1.80 |
+| 50 | 100 | $0.2325 | $6.98 |
+| 100 | 100 | $0.465 | $13.95 |
+| 500 | 100 | $2.325 | $69.75 |
+
+<Tip>
+  Depth 10 is sufficient for any keyword ranking on page one. Use depth 100 for competitive keywords where your client might rank between positions 11 and 100. Mixing depths per keyword is not currently supported — the setting applies to all tracked keywords for a given domain.
+</Tip>
+
+## Backlinks API
+
+The Backlinks API requires a **$100/month minimum commitment** with DataForSEO, separate from your general balance. You must opt in to this commitment before RankLyft can enable backlink fetching.
+
+| Endpoint | Request fee | Row fee | RankLyft feature |
+|---|---|---|---|
+| `summary` | $0.02/request | — | Backlinks Overview |
+| `referring_domains` | $0.02/request | $0.00003/row | Referring Domains |
+| `history` | $0.02/request | $0.00003/row | Backlink History |
+
+### Estimated Backlinks cost per domain per week
+
+| API call | Request fee | Row fee (100 rows) | Subtotal |
+|---|---|---|---|
+| Summary | $0.02 | — | $0.02 |
+| Referring domains (100 domains) | $0.02 | $0.003 | $0.023 |
+| History (100 months) | $0.02 | $0.003 | $0.023 |
+| **Total per domain per week** | | | **~$0.066** |
+| **Total for 15 domains per month** | | | **~$3.96 + $100 minimum** |
+
+<Warning>
+  The $100/month minimum commitment is charged by DataForSEO regardless of how many backlink requests you make. If your actual usage is below $100, you are still billed $100. Only enable Backlinks if you will use it across enough domains to justify the commitment.
+</Warning>
+
+## On-Page API — Site Audit
+
+Site audits crawl your client's website page-by-page. Cost scales with the number of pages crawled and whether JavaScript rendering is enabled.
+
+| Rendering mode | Cost per page | 100-page audit | 500-page audit | 1,000-page audit |
+|---|---|---|---|---|
+| Standard (HTML only) | $0.000125 | $0.013 | $0.063 | $0.125 |
+| JavaScript rendering | $0.001125 | $0.113 | $0.563 | $1.125 |
+
+JavaScript rendering costs 9x more because DataForSEO must run a headless Chromium browser for each page. Only enable it for sites that rely on client-side rendering for meaningful content (React SPAs, Vue apps, etc.). Standard rendering is sufficient for most WordPress, Webflow, or Shopify sites.
+
+### Monthly audit cost examples (daily schedule)
+
+| Pages | Rendering | Per crawl | Monthly (30 days) |
+|---|---|---|---|
+| 100 | Standard | $0.013 | $0.38 |
+| 500 | Standard | $0.063 | $1.88 |
+| 100 | JavaScript | $0.113 | $3.38 |
+| 500 | JavaScript | $0.563 | $16.88 |
+
+<Info>
+  Most agencies do not need daily audits. Running a site audit weekly or monthly is sufficient to catch technical regressions. Use the on-demand refresh when you need to verify a specific fix.
+</Info>
+
+## AI Optimization API — AI Visibility
+
+The AI Optimization API also requires a **$100/month minimum commitment**, separate from your general balance.
+
+| Endpoint | Request fee | Row fee | RankLyft feature |
+|---|---|---|---|
+| `llm_mentions` | $0.10/request | $0.001/row | Brand mentions in LLMs |
+| `top_pages` | $0.10/request | $0.001/row | Top pages in LLM responses |
+| `aggregated_metrics` | $0.10/request | $0.001/row | Aggregated AI Visibility score |
+
+A single AI Visibility check for a domain typically makes 3 requests and returns 10–50 rows per request:
+
+| Cost component | Estimate |
+|---|---|
+| 3 requests @ $0.10 | $0.30 |
+| ~30 rows @ $0.001 | $0.03 |
+| **Total per check** | **~$0.33** |
+
+Running AI Visibility monthly across 15 domains costs roughly **$5 in usage + $100 minimum = $105/month**.
+
+<Warning>
+  AI Optimization's $100/month minimum makes it expensive unless you have clients who specifically need LLM visibility data. Do not enable this feature speculatively.
+</Warning>
+
+## Calculating your own estimate
+
+To estimate your monthly cost:
+
+1. **Labs (weekly cron):** $0.15 × number of domains × 4.3 weeks
+2. **SERP (daily tracking):** cost per keyword × tracked keywords per domain × domains × 30 days
+3. **Backlinks:** $3.96 + $100 minimum (if enabled)
+4. **Site Audit:** cost per page × pages per domain × domains × crawls per month
+5. **AI Visibility:** $0.33 × domains × checks per month + $100 minimum (if enabled)
+
+Add 10–15% for on-demand manual refreshes and research tool usage.

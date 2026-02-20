@@ -1,88 +1,13 @@
 {
   "$schema": "https://mintlify.com/docs.json",
+  "name": "RankLyft",
   "theme": "mint",
-  "name": "Mint Starter Kit",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#171717",
+    "light": "#f5f5f5",
+    "dark": "#171717"
   },
   "favicon": "/favicon.svg",
-  "navigation": {
-    "tabs": [
-      {
-        "tab": "Guides",
-        "groups": [
-          {
-            "group": "Getting started",
-            "pages": [
-              "index",
-              "quickstart",
-              "development"
-            ]
-          },
-          {
-            "group": "Customization",
-            "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
-            ]
-          }
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"
@@ -90,33 +15,114 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "RankLyft App",
+        "href": "https://rank.pagelyft.studio"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "label": "Open App",
+      "href": "https://rank.pagelyft.studio"
     }
   },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Getting Started",
+        "groups": [
+          {
+            "group": "Introduction",
+            "pages": [
+              "getting-started/what-is-ranklyft",
+              "getting-started/quickstart",
+              "getting-started/add-a-website"
+            ]
+          },
+          {
+            "group": "Account",
+            "pages": [
+              "getting-started/logging-in",
+              "getting-started/managing-websites"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Features",
+        "groups": [
+          {
+            "group": "Website reports",
+            "pages": [
+              "features/dashboard",
+              "features/domain-overview",
+              "features/organic-rankings",
+              "features/position-tracking",
+              "features/top-pages",
+              "features/backlinks",
+              "features/site-audit",
+              "features/ai-visibility"
+            ]
+          },
+          {
+            "group": "Research tools",
+            "pages": [
+              "features/keyword-overview",
+              "features/keyword-research",
+              "features/competitors",
+              "features/keyword-gap"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Data & Pricing",
+        "groups": [
+          {
+            "group": "How data works",
+            "pages": [
+              "data/data-sources",
+              "data/refresh-schedules",
+              "data/data-freshness"
+            ]
+          },
+          {
+            "group": "Pricing",
+            "pages": [
+              "data/pricing-overview",
+              "data/dataforseo-costs",
+              "data/semrush-comparison"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "Configuration",
+            "pages": [
+              "reference/environment-variables",
+              "reference/feature-flags",
+              "reference/cron-schedules",
+              "reference/audit-settings"
+            ]
+          },
+          {
+            "group": "Internal endpoints",
+            "pages": [
+              "reference/cron-refresh-websites",
+              "reference/cron-track-positions",
+              "reference/webhook-serp",
+              "reference/webhook-onpage"
+            ]
+          }
+        ]
+      }
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "website": "https://pagelyft.com"
     }
   }
 }

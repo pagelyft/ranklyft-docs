@@ -1,0 +1,32 @@
+---
+title: "Logging in"
+description: "How authentication works in RankLyft."
+---
+
+RankLyft uses email and password authentication managed through Supabase. There is no self-service signup — all accounts are created by a PageLyft admin.
+
+## How to log in
+
+1. Go to [rank.pagelyft.studio/login](https://rank.pagelyft.studio/login).
+2. Enter the email address and password your admin provided.
+3. Click **Sign In**.
+
+You'll be redirected to the main dashboard after a successful login.
+
+## Authentication details
+
+**Email and password only.** RankLyft does not support Google, GitHub, or any other OAuth provider. You must use the email and password combination your admin set up for you.
+
+**No self-service signup.** There is no "Create an account" link. Accounts are provisioned by PageLyft staff. If you need access, contact your PageLyft account manager.
+
+**Sessions auto-refresh.** RankLyft uses Supabase session tokens that refresh automatically in the background. You stay logged in across browser sessions without needing to re-enter your credentials.
+
+**Session expiry.** If your session expires (for example, after an extended period of inactivity), RankLyft redirects you to `/login` automatically. After logging in again, you're returned to your original destination.
+
+## Password issues
+
+RankLyft does not have a self-service password reset flow. If you've forgotten your password or need it changed, contact your PageLyft admin directly. They can reset your credentials through the Supabase dashboard.
+
+<Warning>
+  Do not share your login credentials with other team members. If multiple people at your agency need access, ask your admin to create separate accounts for each person.
+</Warning>

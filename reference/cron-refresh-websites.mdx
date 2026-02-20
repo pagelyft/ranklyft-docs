@@ -1,0 +1,96 @@
+---
+title: "Cron: Refresh Websites"
+description: "Technical reference for the weekly website data refresh job at /api/cron/refresh-websites."
+---
+
+The Refresh Websites cron job re-fetches DataForSEO data for every website in the database once per week. It updates the stored domain overview, ranked keywords, relevant pages, historical data, and (if enabled) backlinks summary.
+
+## Endpoint
+
+```
+POST /api/cron/refresh-websites
+```
+
+**Schedule:** Every Monday at 4:59 AM UTC (`59 4 * * 1`)
+**Max duration:** 300 seconds
+**Auth:** `Authorization: Bearer {CRON_SECRET}`
+
+## What it does
+
+The job fetches all websites from the database, then processes each one sequentially in a single serverless function invocation. Sequential processing prevents DataForSEO rate limit errors that would occur if all websites were fetched in parallel.
+
+For each website, the job calls the following DataForSEO endpoints:
+
+| Data | DataForSEO endpoint | Stored in |
+|---|---|---|
+| Domain overview | `domain_analytics/whois/overview` | `websites` table |
+| Ranked keywords | `dataforseo_labs/google/ranked_keywords/live` (top 100) | `ranked_keywords` table |
+| Relevant pages | `dataforseo_labs/google/relevant_pages/live` (top 50) | `relevant_pages` table |
+| Historical data | `dataforseo_labs/google/domain_rank_overview/live` | `historical_data` table |
+| Backlinks summary | `backlinks/summary/live` | `websites` table |
+
+Backlinks data is only fetched when `NEXT_PUBLIC_FEATURE_BACKLINKS === "true"`.
+
+## Execution flow
+
+```
+1. Authenticate request (verify CRON_SECRET)
+2. Fetch all websites from Supabase
+3. For each website (sequential):
+   a. Fetch domain overview → upsert to websites table
+   b. Fetch top 100 ranked keywords → upsert to ranked_keywords
+   c. Fetch top 50 relevant pages → upsert to relevant_pages
+   d. Fetch historical rank data → upsert to historical_data
+   e. (If FEATURE_BACKLINKS) Fetch backlinks summary → upsert to websites
+4. Return 200 with summary of results
+```
+
+## Error handling
+
+Errors on individual websites do not abort the job. If fetching data for one website fails, the job logs the error and continues to the next website. This ensures a single bad domain does not prevent all other websites from refreshing.
+
+The job returns HTTP 200 even when individual website fetches fail. Check Vercel function logs to identify per-website failures.
+
+<Info>
+  The 300-second `maxDuration` is a hard limit enforced by Vercel. If you have a very large number of websites (50+), the job may time out before processing all of them. In that case, consider breaking the cron into multiple targeted invocations or reducing the data fetched per website.
+</Info>
+
+## Response format
+
+A successful run returns a JSON summary:
+
+```json
+{
+  "success": true,
+  "processed": 12,
+  "errors": 0,
+  "duration_ms": 47200
+}
+```
+
+If the authorization header is missing or incorrect, the endpoint returns `401 Unauthorized`.
+
+## Manual trigger
+
+You can force a refresh outside the normal schedule:
+
+```bash
+curl -X POST https://rank.pagelyft.studio/api/cron/refresh-websites \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+This is useful after adding a batch of new websites or if the Monday run failed.
+
+## Supabase client used
+
+This job uses the Supabase **service role client** (`SUPABASE_SERVICE_ROLE_KEY`) to bypass Row Level Security. It reads all websites regardless of which user owns them and writes directly to all data tables.
+
+<Warning>
+  Do not expose this endpoint publicly or remove the auth check. A successful unauthenticated call would trigger DataForSEO API calls for every website in the database, consuming API credits and potentially exceeding rate limits.
+</Warning>
+
+## Related
+
+- [Cron Schedules](/reference/cron-schedules) — overview of all cron jobs and their schedules
+- [Cron: Track Positions](/reference/cron-track-positions) — the daily position tracking job
+- [Environment Variables](/reference/environment-variables) — `CRON_SECRET` and `DATAFORSEO_*` configuration

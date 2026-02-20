@@ -1,0 +1,50 @@
+---
+title: "Competitors"
+description: "Discover which domains compete with a given site in organic search and compare their keyword footprint, traffic, and ranking strength."
+---
+
+The Competitors tool identifies domains that rank for many of the same keywords as a target domain. Enter any domain to see its top organic search competitors ranked by keyword overlap.
+
+## Running a competitor search
+
+Enter a domain in bare format (no `https://`, no trailing slash) and click **Search**. RankLyft queries the DataForSEO competitors API and returns a table of competing domains sorted by the number of keywords they share with the target.
+
+```
+example.com
+```
+
+The search is not tied to a specific client website — you can look up any domain at any time.
+
+## Results table
+
+| Column | Description |
+|---|---|
+| Domain | The competing domain. Click any domain in this column to run a new competitor search for that domain. |
+| Common Keywords | The number of keywords both the target domain and this competitor rank for in the top 100. Used as the default sort. |
+| Organic Keywords | The total number of keywords this competitor ranks for (not limited to shared terms) |
+| Organic Traffic | The competitor's estimated monthly organic traffic |
+| Traffic Value | The estimated monthly USD value of the competitor's organic traffic |
+| Paid Keywords | The number of keywords the competitor buys in Google Ads |
+| Avg Position | The competitor's average ranking position across all their ranked keywords |
+
+## Sorting and navigating
+
+The table sorts by **Common Keywords** descending by default. Domains at the top share the most keyword overlap with your target — these are the true head-to-head competitors in search.
+
+Click any domain in the Domain column to pivot the search. RankLyft runs a new competitor lookup with that domain as the target. This lets you quickly map a competitive landscape by bouncing between related domains.
+
+## Exporting data
+
+Click **Export CSV** to download the full results table. Use this to present competitor landscape data to a client, or to build a list of domains to analyze further with [Keyword Gap](/features/keyword-gap).
+
+## How to use competitor results
+
+**Identify the real competition.** Clients often think their competitors are the businesses they know from industry events. Organic search competitors are frequently different — they may be media sites, directories, or adjacent-industry domains that rank for the same queries. Show clients who they're actually competing against in search.
+
+**Find content opportunities by studying top competitors.** Competitors with high organic keyword counts but low common keyword overlap may be covering topics the client hasn't addressed. Use [Keyword Gap](/features/keyword-gap) to find exactly which keywords a top competitor ranks for that the client doesn't.
+
+**Benchmark the client's traffic value.** Compare the client's estimated traffic value against competitors to frame the business impact of ranking improvements. If the top competitor's traffic is worth $50,000/month and the client's is worth $8,000/month, that gap translates directly to revenue potential.
+
+<Tip>
+  Start with the top 3 competitors by Common Keywords and run a Keyword Gap analysis against each one. This workflow surfaces the fastest content opportunities in the client's competitive space.
+</Tip>

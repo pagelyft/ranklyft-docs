@@ -1,0 +1,155 @@
+---
+title: "Webhook: OnPage"
+description: "Technical reference for the DataForSEO OnPage pingback webhook that receives and processes site audit results."
+---
+
+The OnPage webhook is the endpoint DataForSEO calls after completing an asynchronous site audit crawl task. It retrieves the crawl summary and page-level data, computes a health score, categorizes issues, and writes the results to the database.
+
+## Endpoint
+
+```
+GET /api/webhooks/dataforseo/onpage
+```
+
+**Triggered by:** DataForSEO OnPage task completion (pingback)
+**Auth:** `secret` query parameter verified against `DATAFORSEO_WEBHOOK_SECRET`
+**Max duration:** 120 seconds
+
+## Query parameters
+
+| Parameter | Source | Description |
+|---|---|---|
+| `secret` | `DATAFORSEO_WEBHOOK_SECRET` env var | Static secret for request verification |
+| `id` | DataForSEO `$id` template | The completed crawl task's unique ID |
+| `tag` | DataForSEO `$tag` template | JSON-encoded tag set at task submission time |
+
+The full URL format sent to DataForSEO at audit submission:
+
+```
+https://rank.pagelyft.studio/api/webhooks/dataforseo/onpage?secret={DATAFORSEO_WEBHOOK_SECRET}&id=$id&tag=$tag
+```
+
+## Tag structure
+
+The `tag` parameter is a JSON string encoded when the audit task was submitted by the Track Positions cron job:
+
+```json
+{
+  "type": "onpage",
+  "auditId": "uuid-of-the-audit-record"
+}
+```
+
+The `type: "onpage"` field disambiguates this webhook from the SERP webhook in shared infrastructure. The `auditId` identifies the `site_audits` row to update.
+
+## Execution flow
+
+```
+1. Verify `secret` query parameter matches DATAFORSEO_WEBHOOK_SECRET
+2. Parse `id` (task ID) and `tag` (JSON) from query parameters
+3. Confirm tag.type === "onpage"
+4. Look up audit record by auditId — verify it exists and is in "pending" status
+5. Call DataForSEO onpage/summary to get crawl summary data
+6. Call DataForSEO onpage/pages to get page-level issue data
+7. Process results via processAuditResults:
+   a. Compute health score from issue counts and severity weights
+   b. Categorize issues (errors, warnings, notices)
+   c. Batch-insert page results into audit_pages table
+8. Update site_audits row: set status "completed", write summary stats and health score
+9. Return 200
+```
+
+On any error in steps 5–8, the audit record is marked `"failed"` before returning 200.
+
+## Health score calculation
+
+The health score is a 0–100 integer calculated from the crawl results. It weights issue types by severity:
+
+| Issue type | Weight |
+|---|---|
+| Errors (broken links, missing tags, 4xx/5xx pages) | High |
+| Warnings (duplicate content, slow pages, missing alt text) | Medium |
+| Notices (minor optimizations) | Low |
+
+A domain with no issues scores 100. Each issue reduces the score proportionally based on its weight and the total number of pages crawled.
+
+## Database writes
+
+The webhook writes to two tables:
+
+### `site_audits`
+
+The existing row (created by the cron job at task submission) is updated:
+
+| Column | Value |
+|---|---|
+| `status` | `"completed"` or `"failed"` |
+| `health_score` | Computed 0–100 integer |
+| `pages_crawled` | Total pages crawled |
+| `errors_count` | Count of error-severity issues |
+| `warnings_count` | Count of warning-severity issues |
+| `notices_count` | Count of notice-severity issues |
+| `completed_at` | UTC timestamp of webhook processing |
+
+### `audit_pages`
+
+One row per crawled page, batch-inserted:
+
+| Column | Value |
+|---|---|
+| `audit_id` | The audit's UUID |
+| `url` | Page URL |
+| `status_code` | HTTP status code |
+| `issues` | JSONB array of issues found on this page |
+| `meta` | JSONB with title, description, h1, word count, load time |
+
+## Error handling
+
+Like the SERP webhook, this endpoint always returns HTTP 200 to prevent DataForSEO retry loops.
+
+| Scenario | Behavior |
+|---|---|
+| Invalid `secret` | Log warning, return 200 |
+| Malformed `tag` JSON | Log error, return 200 |
+| Audit record not found | Log error, return 200 |
+| DataForSEO API error | Mark audit `"failed"`, return 200 |
+| Database write error | Mark audit `"failed"`, return 200 |
+
+<Warning>
+  Audits marked `"failed"` are visible in the Site Audit UI. If you see failed audits, check Vercel function logs filtered to `/api/webhooks/dataforseo/onpage` for the root cause. Common causes are DataForSEO API errors on result retrieval or database write failures due to large page counts.
+</Warning>
+
+## Max duration
+
+The `maxDuration` for this endpoint is 120 seconds. Large audits (many pages with many issues) can take significant time to process and insert. If you consistently see timeouts on large sites, reduce `maxCrawlPages` in the website's [Audit Settings](/reference/audit-settings).
+
+## Audit status lifecycle
+
+```
+[cron submits task] → status: "pending"
+        ↓
+[DataForSEO crawls site]
+        ↓
+[webhook receives result]
+        ↓
+  ┌─────────────────────┐
+  │  Processing succeeds │ → status: "completed"
+  │  Processing fails    │ → status: "failed"
+  └─────────────────────┘
+```
+
+## Local testing
+
+DataForSEO cannot deliver webhooks to `localhost`. Use the same tunnel approach as the SERP webhook:
+
+1. Start a tunnel (e.g. `ngrok http 3000`).
+2. Set `NEXT_PUBLIC_APP_URL` to the tunnel URL in `.env.local`.
+3. Trigger a site audit manually through the Site Audit UI.
+4. Monitor the tunnel dashboard for the incoming OnPage webhook call.
+
+## Related
+
+- [Cron: Track Positions](/reference/cron-track-positions) — submits OnPage audit tasks that trigger this webhook
+- [Audit Settings](/reference/audit-settings) — controls crawl limits, JS rendering, and schedules
+- [Webhook: SERP](/reference/webhook-serp) — the position tracking equivalent
+- [Environment Variables](/reference/environment-variables) — `DATAFORSEO_WEBHOOK_SECRET` and `NEXT_PUBLIC_APP_URL`

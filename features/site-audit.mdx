@@ -1,0 +1,106 @@
+---
+title: "Site Audit"
+description: "An on-demand and scheduled technical SEO crawl that scores a site's health and surfaces issues across six categories."
+---
+
+Site Audit crawls a client's website and produces a technical SEO health report. It identifies issues across six categories, assigns a health score, and lets you compare results against previous crawls to track progress over time.
+
+## Starting a crawl
+
+Click **Run Audit** to open the audit settings dialog before your first crawl. You can also re-open settings at any time to adjust parameters for the next run.
+
+<Steps>
+  <Step title="Set the page limit">
+    Choose how many pages to crawl. The default is **500 pages**. Larger sites may need a higher limit, but this increases both crawl time and API cost. For most agency clients, 500 pages covers the full site.
+  </Step>
+  <Step title="Set the crawl depth">
+    Max depth controls how many levels of links the crawler follows from the homepage. A depth of 3 reaches pages linked from pages linked from the homepage. Leave this at the default unless you have a specific reason to limit it.
+  </Step>
+  <Step title="Configure crawl options">
+    Three optional settings affect how the crawler behaves:
+
+    - **Include subdomains** — crawl pages on subdomains (e.g., `blog.example.com`) in addition to the root domain
+    - **Respect sitemap** — prioritize URLs listed in `sitemap.xml`
+    - **JavaScript rendering** — render pages with a headless browser before crawling. Required for sites that load content via JavaScript. Note: JS rendering costs approximately 10x more per page than a standard crawl.
+  </Step>
+  <Step title="Set the schedule">
+    Choose how often the audit should run automatically:
+
+    - **Once** — run the crawl now and do not repeat
+    - **Daily** — crawl every day
+    - **Weekly** — choose a day of the week for the crawl to run
+    - **Monthly** — crawl on the same day each month
+  </Step>
+  <Step title="Start the crawl">
+    Click **Start Audit**. RankLyft queues the crawl via the DataForSEO On-Page API. The crawl runs asynchronously — you can navigate away and return later. RankLyft polls for results every 10 seconds while you're on the page.
+  </Step>
+</Steps>
+
+<Warning>
+  JavaScript rendering increases the cost per crawled page by approximately 10x compared to standard crawling. Only enable it if the site requires JS to render its content. Most static or server-rendered sites do not need it.
+</Warning>
+
+## Health score
+
+The health score appears as a 0–100 number at the top of the audit results. It reflects the overall technical condition of the site based on the issues found:
+
+```
+Health Score = 100 - (Errors × 3) - (Warnings × 1) - (Notices × 0.2)
+```
+
+| Severity | Score impact per issue |
+|---|---|
+| Error | −3 points |
+| Warning | −1 point |
+| Notice | −0.2 points |
+
+A score of 80+ is generally healthy. Scores below 60 indicate significant technical problems that warrant immediate attention.
+
+## Issue categories
+
+Issues are organized into six categories:
+
+<Accordion title="Indexability">
+  Pages that search engines cannot or should not index. Common issues: noindex tags on important pages, pages blocked by `robots.txt`, redirect chains, and canonical tag mismatches.
+</Accordion>
+
+<Accordion title="Content">
+  Issues with page content quality and structure. Common issues: duplicate titles, missing or short meta descriptions, thin content, missing H1 tags, and duplicate content across pages.
+</Accordion>
+
+<Accordion title="Links">
+  Internal and external link problems. Common issues: broken internal links, broken external links, orphan pages with no internal links pointing to them, and redirect loops.
+</Accordion>
+
+<Accordion title="Performance">
+  Page load and user experience signals. Common issues: large uncompressed images, missing lazy loading, excessive page size, and slow server response times.
+</Accordion>
+
+<Accordion title="Security">
+  HTTPS and security-related issues. Common issues: mixed content warnings, missing HTTPS, and expired SSL certificates.
+</Accordion>
+
+<Accordion title="Technical">
+  Crawl and technical infrastructure issues. Common issues: missing or malformed `robots.txt`, sitemap errors, hreflang misconfigurations, and missing structured data.
+</Accordion>
+
+## Filtering issues
+
+Use the category and severity filters above the issue table to focus on specific problem types. You can filter by:
+
+- **Category** — show only one of the six categories
+- **Severity** — show only Errors, Warnings, or Notices
+
+Start with Errors and work down. Fixing errors has the largest impact on the health score.
+
+## Crawl comparison
+
+When you run a second or subsequent audit, RankLyft compares the results against the previous crawl and shows deltas for each issue type. This lets you demonstrate to clients that technical issues are being resolved over time, or flag new issues that appeared since the last audit.
+
+<Tip>
+  Run an audit before and after any major site change — a platform migration, redesign, or CMS update. The comparison view will immediately surface any new issues introduced by the change.
+</Tip>
+
+## Crawl status and polling
+
+After starting a crawl, RankLyft shows a progress indicator and polls the DataForSEO API every 10 seconds. Depending on the number of pages and whether JS rendering is enabled, a crawl typically completes in 2–15 minutes. You do not need to keep the tab open — results will be saved when the crawl finishes.

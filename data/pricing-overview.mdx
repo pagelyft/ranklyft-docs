@@ -1,0 +1,77 @@
+---
+title: "Pricing overview"
+description: "RankLyft passes DataForSEO API costs directly to you. This page summarizes what you can expect to spend at different usage levels."
+---
+
+RankLyft does not charge a flat monthly SaaS fee. Instead, you fund a DataForSEO account and RankLyft draws from that balance as it runs API calls on your behalf. You pay for what you use.
+
+DataForSEO requires a **$50 minimum deposit** to open an account. Beyond that, there are no subscription fees for the core Labs and SERP APIs — you top up your balance as needed.
+
+## Estimated monthly cost by usage profile
+
+These estimates cover the weekly cron (domain overview, rankings, top pages, historical data) and daily position tracking across a typical agency account.
+
+| Profile | Domains | Tracked keywords/domain | Estimated monthly cost |
+|---|---|---|---|
+| Small agency | 5 | 20 (depth 10) | ~$5–10/mo |
+| Mid-size agency | 15 | 50 (depth 10) | ~$15–25/mo |
+| Full depth tracking | 15 | 50 (depth 100) | ~$60–90/mo |
+| With JS site audits | 15 | 50 (depth 100) + monthly audit | ~$90–120/mo |
+| With Backlinks | 15 | 50 (depth 100) + backlinks | ~$120–150/mo |
+| Full platform | 15 | 50 (depth 100) + audits + backlinks + AI Visibility | ~$230–280/mo |
+
+<Info>
+  These are estimates based on typical usage patterns. Your actual cost depends on how many domains you add, how many keywords you track, how often you run manual refreshes, and whether you enable Backlinks or AI Optimization features.
+</Info>
+
+## Cost drivers
+
+### 1. Weekly cron (per domain)
+
+The weekly cron runs for every domain in your account. Each domain costs roughly **$0.10–0.15** per weekly run at standard depths. For 15 domains, that is roughly **$1.50–$2.25/week** or **$6–$9/month**.
+
+### 2. Position tracking (per keyword per day)
+
+Position tracking is the largest cost driver for most agencies. Every tracked keyword fires one SERP API call per day.
+
+- **Depth 10** (top 10 results): $0.0006/keyword/day → ~$0.018/keyword/month
+- **Depth 100** (top 100 results): $0.00465/keyword/day → ~$0.14/keyword/month
+
+Tracking 50 keywords at depth 10 across 15 domains costs roughly **$13.50/month**. At depth 100, the same setup costs roughly **$104/month**.
+
+<Tip>
+  Use depth 10 for most keywords. Switch to depth 100 only for keywords where you need to track positions below the first page — useful for competitive keywords where clients rank in the 20–50 range.
+</Tip>
+
+### 3. Site audits (per page)
+
+Site audits cost $0.000125/page for standard HTTP crawls. JavaScript rendering costs 9x more ($0.001125/page). A 500-page site crawled monthly:
+
+- Standard crawl: $0.063/crawl → ~$0.25/month
+- JS rendering: $0.56/crawl → ~$2.25/month
+
+### 4. Backlinks (minimum commitment)
+
+The Backlinks API requires a **$100/month minimum commitment** with DataForSEO, separate from your Labs and SERP balance. This is a DataForSEO requirement, not a RankLyft markup. If you need backlink data, that minimum applies regardless of how many requests you make.
+
+### 5. AI Visibility (minimum commitment)
+
+The AI Optimization API also requires a **$100/month minimum commitment**. Each AI Visibility check costs $0.10/request plus $0.001/row returned. AI Visibility is only worth enabling if you have clients specifically asking about their LLM presence.
+
+## Comparison to Semrush
+
+| Tool | Entry plan | Mid plan | Power plan |
+|---|---|---|---|
+| Semrush | $139.95/mo (Pro) | $249.95/mo (Guru) | $499.95/mo (Business) |
+| RankLyft (core) | ~$5–10/mo | ~$15–25/mo | ~$60–90/mo |
+| RankLyft (full platform) | — | ~$120–150/mo | ~$230–280/mo |
+
+Even at full platform usage with Backlinks and AI Visibility enabled, RankLyft costs less than Semrush's entry-level Pro plan. See [RankLyft vs Semrush](/data/semrush-comparison) for a detailed feature comparison including honest tradeoffs.
+
+## Managing your DataForSEO balance
+
+You can monitor your remaining DataForSEO balance directly in the DataForSEO dashboard at [app.dataforseo.com](https://app.dataforseo.com). RankLyft does not display your balance in-app. Set up a low-balance alert in DataForSEO to avoid cron failures due to an empty account.
+
+<Warning>
+  If your DataForSEO balance reaches zero, all cron jobs and on-demand refreshes will fail silently. Your displayed data will stop updating but will not disappear. Top up your balance to resume normal operation.
+</Warning>

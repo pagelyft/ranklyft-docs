@@ -1,0 +1,105 @@
+---
+title: "Cron Schedules"
+description: "Overview of all scheduled background jobs, their triggers, and what each one does."
+---
+
+RankLyft runs two cron jobs configured in `vercel.json`. Both jobs run in the Vercel Production environment only. They do not run on Preview or Development deployments.
+
+## Cron jobs
+
+| Job | Route | Schedule | Frequency |
+|---|---|---|---|
+| Refresh Websites | `/api/cron/refresh-websites` | `59 4 * * 1` | Every Monday at 4:59 AM UTC |
+| Track Positions | `/api/cron/track-positions` | `0 6 * * *` | Every day at 6:00 AM UTC |
+
+## Authentication
+
+Both endpoints require a `Authorization: Bearer {CRON_SECRET}` header. Vercel injects this header automatically when triggering cron jobs. If you call these endpoints manually (for testing or a forced run), you must include the header yourself.
+
+```bash
+curl -X POST https://rank.pagelyft.studio/api/cron/refresh-websites \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+<Warning>
+  Never expose `CRON_SECRET` in client-side code or commit it to version control. Treat it as a password.
+</Warning>
+
+## Refresh Websites — weekly
+
+**Route:** `POST /api/cron/refresh-websites`
+**Schedule:** Mondays at 4:59 AM UTC
+**Max duration:** 300 seconds
+
+Iterates through every website in the database sequentially and re-fetches DataForSEO data for each one. The job processes websites one at a time to avoid hitting DataForSEO rate limits. For each website it fetches:
+
+- Domain overview (authority, traffic estimate, backlink count)
+- Top 100 ranked keywords
+- Top 50 relevant pages
+- Historical traffic data
+- Backlinks summary (only if `NEXT_PUBLIC_FEATURE_BACKLINKS` is enabled)
+
+See [Cron: Refresh Websites](/reference/cron-refresh-websites) for full details.
+
+## Track Positions — daily
+
+**Route:** `POST /api/cron/track-positions`
+**Schedule:** Daily at 6:00 AM UTC
+**Max duration:** 300 seconds
+
+Submits SERP tracking tasks to DataForSEO in batches of 100 keywords. Tasks are submitted asynchronously — DataForSEO processes them and delivers results via webhook rather than returning them inline. The job also checks each website's audit schedule and triggers site crawls that are due.
+
+See [Cron: Track Positions](/reference/cron-track-positions) for full details.
+
+## Execution order
+
+The two jobs do not overlap under normal conditions. Refresh Websites runs on Mondays at 4:59 AM UTC and finishes well before the Track Positions job fires at 6:00 AM UTC.
+
+```
+Monday timeline (UTC):
+04:59  Refresh Websites starts
+05:xx  Refresh Websites finishes (≤ 5 min for typical load)
+06:00  Track Positions starts
+06:xx  Track Positions finishes
+```
+
+On non-Monday days, only Track Positions runs.
+
+## `vercel.json` configuration
+
+```json
+{
+  "crons": [
+    {
+      "path": "/api/cron/refresh-websites",
+      "schedule": "59 4 * * 1"
+    },
+    {
+      "path": "/api/cron/track-positions",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}
+```
+
+<Info>
+  Vercel cron jobs use standard cron syntax. The timezone is always UTC. Vercel delivers the request to your serverless function as an HTTP POST with the `Authorization` header set to `Bearer {CRON_SECRET}`.
+</Info>
+
+## Manual execution
+
+You can trigger either job manually from the command line. This is useful after adding a batch of new websites or after a failed run.
+
+```bash
+# Trigger refresh-websites manually
+curl -X POST https://rank.pagelyft.studio/api/cron/refresh-websites \
+  -H "Authorization: Bearer $CRON_SECRET"
+
+# Trigger track-positions manually
+curl -X POST https://rank.pagelyft.studio/api/cron/track-positions \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+<Tip>
+  You can also trigger cron jobs from the Vercel dashboard under **Settings > Cron Jobs > Run now**, which injects the auth header automatically.
+</Tip>

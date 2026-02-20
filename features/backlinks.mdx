@@ -1,0 +1,52 @@
+---
+title: "Backlinks"
+description: "Summary metrics, historical trends, and a referring domain table for a client's backlink profile."
+---
+
+The Backlinks report gives you an overview of a domain's link profile: how many backlinks it has, where they come from, how authoritative those sources are, and how the link count has changed over time.
+
+<Warning>
+  Backlinks is a feature-flagged report. It must be enabled with the `NEXT_PUBLIC_FEATURE_BACKLINKS` environment variable before it appears in the sidebar. Contact your admin if you expect to see this report but don't see it in the navigation.
+</Warning>
+
+## Summary metrics
+
+Four metric cards appear at the top of the Backlinks page:
+
+| Metric | Description |
+|---|---|
+| Total Backlinks | The total number of individual links pointing to the domain |
+| Referring Domains | The number of unique domains linking to the site |
+| Domain Rank | The domain's authority score on a 0–1000 scale. Higher is stronger. |
+| Broken Backlinks | Links pointing to pages that return a 404 or other error |
+
+<Tip>
+  Referring Domains is typically a more meaningful signal than Total Backlinks. A single high-authority domain linking 50 times is less valuable than 50 different referring domains. Focus on growing the referring domain count, not just the backlink count.
+</Tip>
+
+## History chart
+
+The history chart plots two lines over time:
+
+- **Backlinks** — the total number of backlinks
+- **Referring Domains** — the number of unique linking domains
+
+Use this chart to detect link losses (which may coincide with ranking drops), identify when link-building campaigns took effect, or spot unnatural spikes that could indicate a spam attack.
+
+## Referring domains table
+
+The table lists every domain linking to the client's site with the following columns:
+
+| Column | Description |
+|---|---|
+| Domain | The referring domain's root URL |
+| Domain Rank | The referring domain's authority score (0–1000) |
+| Backlinks | The number of individual links from this domain |
+| Spam Score | A 0–100 score indicating how likely the domain is to be spammy. Higher is worse. |
+| First Seen | The date RankLyft first detected a link from this domain |
+
+Sort by **Domain Rank** to find your most authoritative links, or by **Spam Score** to identify low-quality links that may be worth disavowing.
+
+## Refresh schedule
+
+Backlink data is refreshed weekly when the feature is enabled. Because backlink data changes more slowly than rankings, weekly updates are sufficient for most agency workflows. See [Refresh Schedules](/data/refresh-schedules) for exact timing.

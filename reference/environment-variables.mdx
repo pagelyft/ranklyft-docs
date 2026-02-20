@@ -1,0 +1,86 @@
+---
+title: "Environment Variables"
+description: "All environment variables required to run RankLyft, with descriptions and configuration notes."
+---
+
+RankLyft reads configuration from environment variables at runtime. Set these in your Vercel project settings under **Settings > Environment Variables**, or in a local `.env.local` file for development.
+
+## Required variables
+
+All of the following variables must be present. The application will fail to start or produce runtime errors if any required variable is missing.
+
+| Variable | Scope | Description |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Client + Server | Your Supabase project URL, e.g. `https://abc123.supabase.co` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client + Server | Supabase anon (public) key. Safe to expose to the browser. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server only | Supabase service role key. Bypasses Row Level Security. Never expose to the client. |
+| `DATAFORSEO_LOGIN` | Server only | DataForSEO account email address |
+| `DATAFORSEO_PASSWORD` | Server only | DataForSEO API password |
+| `CRON_SECRET` | Server only | Bearer token used to authenticate cron job requests from Vercel |
+| `DATAFORSEO_WEBHOOK_SECRET` | Server only | Secret appended to DataForSEO pingback URLs for webhook verification |
+| `NEXT_PUBLIC_APP_URL` | Client + Server | Production base URL, e.g. `https://rank.pagelyft.studio`. Used to construct webhook pingback URLs sent to DataForSEO. |
+
+## Optional variables
+
+These variables enable opt-in features. Omit them entirely (or set them to any value other than `"true"`) to disable the associated feature.
+
+| Variable | Description |
+|---|---|
+| `NEXT_PUBLIC_FEATURE_BACKLINKS` | Set to `"true"` to enable the Backlinks section. See [Feature Flags](/reference/feature-flags). |
+| `NEXT_PUBLIC_FEATURE_AI_VISIBILITY` | Set to `"true"` to enable the AI Visibility section. See [Feature Flags](/reference/feature-flags). |
+
+## Scope notes
+
+Variables prefixed with `NEXT_PUBLIC_` are embedded into the client-side JavaScript bundle at build time. Do not place secrets in `NEXT_PUBLIC_` variables.
+
+| Prefix | Accessible in |
+|---|---|
+| `NEXT_PUBLIC_` | Browser, Server Components, Route Handlers, Edge middleware |
+| _(no prefix)_ | Server Components, Route Handlers, cron endpoints, webhooks only |
+
+<Warning>
+  `SUPABASE_SERVICE_ROLE_KEY` bypasses Row Level Security entirely. Only use it in server-side contexts — cron jobs, webhook handlers, and server actions. Never reference it in Client Components or expose it through a public API route.
+</Warning>
+
+## Local development
+
+Create a `.env.local` file at the project root. This file is git-ignored and is never committed.
+
+```bash
+# .env.local
+
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+DATAFORSEO_LOGIN=your@email.com
+DATAFORSEO_PASSWORD=your-dataforseo-password
+
+CRON_SECRET=a-random-secret-you-generate
+DATAFORSEO_WEBHOOK_SECRET=another-random-secret
+
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+<Tip>
+  DataForSEO webhooks require a publicly accessible URL to deliver results. In local development, use a tunneling tool like [ngrok](https://ngrok.com) or [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/) and point `NEXT_PUBLIC_APP_URL` at the tunnel URL. Otherwise, position tracking and site audit jobs will submit successfully but their results will never be delivered.
+</Tip>
+
+## Vercel environment scopes
+
+When setting variables in Vercel, assign each to the appropriate environment scope:
+
+| Variable | Production | Preview | Development |
+|---|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Yes | Yes |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Yes | Yes |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Yes | Yes |
+| `DATAFORSEO_LOGIN` | Yes | Yes | Yes |
+| `DATAFORSEO_PASSWORD` | Yes | Yes | Yes |
+| `CRON_SECRET` | Yes | No | No |
+| `DATAFORSEO_WEBHOOK_SECRET` | Yes | No | No |
+| `NEXT_PUBLIC_APP_URL` | Yes | Yes | Yes |
+
+<Info>
+  Cron jobs only run in the Production environment on Vercel. You do not need `CRON_SECRET` on Preview or Development deployments unless you are manually testing the cron endpoints.
+</Info>

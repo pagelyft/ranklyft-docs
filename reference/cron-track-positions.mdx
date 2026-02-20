@@ -1,0 +1,122 @@
+---
+title: "Cron: Track Positions"
+description: "Technical reference for the daily position tracking and site audit scheduling job at /api/cron/track-positions."
+---
+
+The Track Positions cron job runs daily and does two things: it submits SERP ranking tasks to DataForSEO for all tracked keywords, and it triggers any site audits whose schedule is due for today.
+
+## Endpoint
+
+```
+POST /api/cron/track-positions
+```
+
+**Schedule:** Daily at 6:00 AM UTC (`0 6 * * *`)
+**Max duration:** 300 seconds
+**Auth:** `Authorization: Bearer {CRON_SECRET}`
+
+## Part 1 — SERP position tracking
+
+The job fetches all tracked keywords from the database and submits them to DataForSEO as asynchronous SERP tasks. Results are not returned inline — DataForSEO processes the tasks and delivers results to the SERP webhook when complete.
+
+### Task submission
+
+Keywords are submitted in batches of 100 to stay within DataForSEO's batch size limits. Each task is submitted with:
+
+- The keyword to rank-check
+- The target domain to find in the results
+- A `tag` containing `{ websiteId, domain }` — used by the webhook to route the result back to the correct website
+- A `pingback` URL pointing to the SERP webhook endpoint
+
+```
+Pingback URL format:
+https://rank.pagelyft.studio/api/webhooks/dataforseo?secret={DATAFORSEO_WEBHOOK_SECRET}&id=$id&tag=$tag
+```
+
+<Info>
+  `$id` and `$tag` are DataForSEO template variables, not application variables. DataForSEO substitutes the actual task ID and tag values when it calls the pingback URL.
+</Info>
+
+### Execution flow
+
+```
+1. Authenticate request (verify CRON_SECRET)
+2. Fetch all tracked keywords from Supabase (with website domain)
+3. Batch keywords into groups of 100
+4. For each batch:
+   a. Submit SERP tasks to DataForSEO with pingback URL
+   b. Log submitted task IDs
+5. Proceed to Part 2 (audit scheduling)
+6. Return 200
+```
+
+Results arrive asynchronously via the [SERP Webhook](/reference/webhook-serp) over the next several minutes to hours after submission.
+
+## Part 2 — site audit scheduling
+
+After submitting position tracking tasks, the job checks each website's `audit_settings.schedule` field and triggers a new site audit if one is due today.
+
+### Schedule evaluation
+
+The job compares the current UTC day against each website's configured schedule:
+
+| Schedule value | Triggers when |
+|---|---|
+| `"once"` | Never triggers automatically |
+| `"daily"` | Every day |
+| `"weekly_monday"` — `"weekly_sunday"` | When the current UTC day matches |
+| `"monthly"` | On the 1st of each month |
+
+When a website is due for an audit, the job creates a new audit record in the `site_audits` table with status `"pending"` and submits a crawl task to DataForSEO's OnPage API with a pingback URL pointing to the [OnPage Webhook](/reference/webhook-onpage).
+
+```
+OnPage pingback URL format:
+https://rank.pagelyft.studio/api/webhooks/dataforseo/onpage?secret={DATAFORSEO_WEBHOOK_SECRET}&id=$id&tag=$tag
+```
+
+The `tag` contains `{ type: "onpage", auditId }` so the webhook can update the correct audit record.
+
+## Error handling
+
+Errors in one batch of SERP tasks do not abort the job. If a batch submission fails, the error is logged and the next batch proceeds. Audit scheduling errors per website are similarly isolated.
+
+The endpoint returns HTTP 200 even when individual tasks fail. Check Vercel function logs to diagnose failures.
+
+<Warning>
+  If this job times out before processing all keyword batches, some tracked keywords will not receive updated positions that day. The next day's run will pick them up. Minimize tracked keywords per website if timeouts occur frequently.
+</Warning>
+
+## Response format
+
+```json
+{
+  "success": true,
+  "keywords_submitted": 340,
+  "batches": 4,
+  "audits_triggered": 2,
+  "errors": 0
+}
+```
+
+## Manual trigger
+
+```bash
+curl -X POST https://rank.pagelyft.studio/api/cron/track-positions \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+Use this after adding new tracked keywords or after a failed daily run.
+
+## Dependencies
+
+- **SERP results** arrive via [Webhook: SERP](/reference/webhook-serp)
+- **Site audit results** arrive via [Webhook: OnPage](/reference/webhook-onpage)
+- **Audit settings** control which sites receive scheduled crawls — see [Audit Settings](/reference/audit-settings)
+- **Environment variables** required: `CRON_SECRET`, `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD`, `DATAFORSEO_WEBHOOK_SECRET`, `NEXT_PUBLIC_APP_URL`
+
+## Related
+
+- [Cron Schedules](/reference/cron-schedules) — overview of all cron jobs
+- [Cron: Refresh Websites](/reference/cron-refresh-websites) — the weekly data refresh job
+- [Webhook: SERP](/reference/webhook-serp) — receives SERP task results
+- [Webhook: OnPage](/reference/webhook-onpage) — receives site audit results

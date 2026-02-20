@@ -1,0 +1,93 @@
+---
+title: "Audit Settings"
+description: "Configuration options for site audits, including crawl limits, scheduling, and cost estimates."
+---
+
+Each website in RankLyft has its own audit settings stored in the `audit_settings` JSONB column on the websites table. Settings are configured per website through the Site Audit UI and persist across audit runs.
+
+## Settings reference
+
+| Setting | Type | Default | Description |
+|---|---|---|---|
+| `maxCrawlPages` | `number` | `500` | Maximum number of pages to crawl per audit run |
+| `maxCrawlDepth` | `number \| null` | `null` (unlimited) | Maximum link depth to follow from the root URL |
+| `allowSubdomains` | `boolean` | `false` | Whether to follow links to subdomains of the target domain |
+| `enableJavascript` | `boolean` | `false` | Whether to render pages with a headless browser before crawling |
+| `respectSitemap` | `boolean` | `true` | Whether to prioritize URLs listed in the domain's sitemap |
+| `schedule` | `string` | `"once"` | How often to re-run the audit automatically |
+
+## Schedule options
+
+The `schedule` field controls how frequently the Track Positions cron job triggers a new audit for the website.
+
+| Value | Trigger |
+|---|---|
+| `"once"` | No automatic re-runs. Only runs when manually triggered. |
+| `"daily"` | Runs every day at cron execution time (6:00 AM UTC) |
+| `"weekly_monday"` | Runs every Monday |
+| `"weekly_tuesday"` | Runs every Tuesday |
+| `"weekly_wednesday"` | Runs every Wednesday |
+| `"weekly_thursday"` | Runs every Thursday |
+| `"weekly_friday"` | Runs every Friday |
+| `"weekly_saturday"` | Runs every Saturday |
+| `"weekly_sunday"` | Runs every Sunday |
+| `"monthly"` | Runs on the first day of each month |
+
+<Info>
+  Schedule checks happen inside the `/api/cron/track-positions` job. If the job is skipped or fails on a scheduled day, that audit run is missed — it does not catch up the next day.
+</Info>
+
+## JavaScript rendering
+
+JavaScript rendering (`enableJavascript: true`) uses DataForSEO's headless browser crawl mode. This crawls Single Page Applications (SPAs) and pages that load content via JavaScript more accurately, but at a significantly higher cost.
+
+<Warning>
+  Enabling JavaScript rendering increases the per-page cost by approximately 9x. Crawling 500 pages with JS rendering enabled costs roughly $0.56 per audit run instead of $0.06. Enable this only for sites that genuinely require it.
+</Warning>
+
+## Cost estimates
+
+DataForSEO bills per crawled page. The following estimates assume the default of 500 `maxCrawlPages`.
+
+| Mode | Cost per page | 500-page audit | Monthly (daily schedule) |
+|---|---|---|---|
+| Basic (no JS) | $0.000125 | ~$0.06 | ~$1.88 |
+| JavaScript rendering | $0.001125 | ~$0.56 | ~$16.88 |
+
+Reducing `maxCrawlPages` lowers cost proportionally. A 100-page basic audit costs approximately $0.01 per run.
+
+<Tip>
+  For most standard websites, the basic crawl mode produces complete and accurate results. Reserve JavaScript rendering for React, Vue, or Angular apps where critical content is rendered client-side.
+</Tip>
+
+## Storage format
+
+Settings are stored as a JSONB object in the `audit_settings` column on the `websites` table. A fully specified settings object looks like this:
+
+```json
+{
+  "maxCrawlPages": 500,
+  "maxCrawlDepth": null,
+  "allowSubdomains": false,
+  "enableJavascript": false,
+  "respectSitemap": true,
+  "schedule": "weekly_monday"
+}
+```
+
+Missing keys fall back to their defaults at runtime. You do not need to write all fields when only changing one setting.
+
+## Crawl depth
+
+Setting `maxCrawlDepth` to `null` (the default) removes the depth limit entirely, allowing the crawler to follow links as far as they go up to the `maxCrawlPages` limit. Set it to a specific integer to restrict how deep the crawler traverses from the homepage.
+
+| `maxCrawlDepth` | Behavior |
+|---|---|
+| `null` | No depth limit — follows all reachable links |
+| `1` | Homepage and pages linked directly from it only |
+| `2` | Adds pages reachable via one intermediate link |
+| `3` | Typical depth for standard websites |
+
+## Subdomains
+
+By default, the crawler stays on the root domain. Set `allowSubdomains: true` to also crawl pages on subdomains (e.g. `blog.example.com` when auditing `example.com`). Subdomains count toward the `maxCrawlPages` limit.

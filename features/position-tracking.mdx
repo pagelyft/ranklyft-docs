@@ -1,0 +1,85 @@
+---
+title: "Position Tracking"
+description: "Daily SERP rank tracking for a curated list of keywords, with 30-day sparklines, share of voice, and visibility metrics."
+---
+
+Position Tracking monitors a specific set of keywords for a website every day. Unlike Organic Rankings — which shows the full snapshot of everything a domain ranks for — Position Tracking focuses on the keywords you care about most and shows how they move over time.
+
+## How it works
+
+RankLyft checks the Google SERP for each tracked keyword once per day at **6 AM UTC** and records the domain's position. Results accumulate over time, giving you a 30-day history for each keyword.
+
+<Info>
+  When you add a new website, RankLyft automatically seeds Position Tracking with the domain's top-performing keywords. You don't have to add keywords manually on day one. Fresh position data for the seeded keywords will appear the following morning after the first tracking run.
+</Info>
+
+## Summary metrics
+
+Six metrics appear at the top of the Position Tracking page:
+
+| Metric | Description |
+|---|---|
+| Tracked Keywords | Total number of keywords currently being monitored |
+| Avg Position | Average ranking position across all tracked keywords |
+| Share of Voice | Estimated percentage of available clicks your tracked keywords capture, based on a CTR curve |
+| Visibility | Estimated monthly traffic from tracked keywords at their current positions |
+| Improved | Number of keywords that moved up since the previous day |
+| Declined | Number of keywords that moved down since the previous day |
+
+### Share of Voice and the CTR curve
+
+Share of Voice uses a position-based click-through rate (CTR) curve to estimate what percentage of searches result in a click to the client's site. The CTR assumptions RankLyft uses are:
+
+| Position | Estimated CTR |
+|---|---|
+| 1 | 31.7% |
+| 2 | 24.7% |
+| 3 and below | Declining curve |
+| 11–20 | ~1% |
+
+A keyword ranking at position 1 contributes far more to Share of Voice than the same keyword at position 8. Use this metric to show clients the real-world impact of ranking improvements.
+
+## Keyword table
+
+The main table shows every tracked keyword with the following columns:
+
+| Column | Description |
+|---|---|
+| Keyword | The search query |
+| Intent | Search intent badge: I, N, C, or T |
+| Position | Current Google ranking |
+| Change | Movement since yesterday |
+| KD% | Keyword Difficulty, 0–100 |
+| Volume | Monthly search volume |
+| 30d Trend | A sparkline of the last 30 days of position data. The chart is inverted — lower on the chart is better (higher ranking). |
+| Remove | A button to stop tracking this keyword |
+
+## Adding keywords
+
+Click **Add Keywords** to open the keyword input dialog. Enter one keyword per line, then click **Add**. RankLyft queues those keywords for the next tracking run. Position data for newly added keywords appears the following morning.
+
+<Steps>
+  <Step title="Open the Add Keywords dialog">
+    Click the **Add Keywords** button in the top-right of the Position Tracking page.
+  </Step>
+  <Step title="Enter keywords">
+    Type or paste your keywords, one per line. There is no hard cap on the number you can add, but each keyword adds to your daily API usage.
+  </Step>
+  <Step title="Confirm">
+    Click **Add**. RankLyft saves the keywords immediately. They appear in the table right away, but the position column will be empty until the next 6 AM UTC run.
+  </Step>
+</Steps>
+
+## Removing keywords
+
+Click the remove button on any row to stop tracking that keyword. RankLyft deletes the keyword and its historical position data for this website. This action cannot be undone.
+
+<Warning>
+  Removing a keyword permanently deletes its position history for this website. If you think you might want the data later, export the table to CSV before removing.
+</Warning>
+
+## Reading the 30-day sparkline
+
+The sparkline on each row is inverted — movement upward on the chart means the position number got worse (moved toward 100), while movement downward on the chart means the ranking improved (moved toward 1). This is counterintuitive at first, but it reflects how SEO position numbers work: lower is better.
+
+A flat line at the bottom of the sparkline means the keyword has held a top position consistently. A flat line at the top means the keyword is sitting deep in the results. A downward trend on the chart is good news.

@@ -1,0 +1,73 @@
+---
+title: "Data sources"
+description: "Every data point in RankLyft comes from the DataForSEO API. This page maps each feature to the specific API endpoint that powers it."
+---
+
+RankLyft does not maintain its own index. All SEO data — keyword rankings, backlinks, traffic estimates, SERP positions, site audit results, and AI mention data — comes from [DataForSEO](https://dataforseo.com), a pay-per-call API used by many enterprise SEO platforms.
+
+Understanding which API backs each feature helps you interpret data freshness, understand cost drivers, and set accurate expectations with clients.
+
+## API types
+
+DataForSEO offers two fundamentally different data types:
+
+| Type | How it works | Speed | Cost |
+|---|---|---|---|
+| **Pre-indexed** | Returns data from DataForSEO's continuously updated index | Near-instant (seconds) | Lower |
+| **Live** | Performs a real-time crawl or SERP query at the moment of the request | Minutes to hours | Higher |
+
+Most of RankLyft's features use pre-indexed data. Live queries are reserved for features where real-time accuracy is required — position tracking, site audits, and AI visibility checks.
+
+## Feature-to-API mapping
+
+| Feature | DataForSEO API | Namespace | Data type |
+|---|---|---|---|
+| Domain Overview | `googleDomainRankOverviewLive` | Labs | Pre-indexed |
+| Historical Trends | `googleHistoricalRankOverviewLive` | Labs | Pre-indexed |
+| Organic Rankings | `googleRankedKeywordsLive` | Labs | Pre-indexed |
+| Top Pages | `googleRelevantPagesLive` | Labs | Pre-indexed |
+| Position Tracking | `googleOrganicTaskPost` | SERP | Live SERP |
+| Keyword Overview | `googleKeywordOverviewLive` | Labs | Pre-indexed |
+| Keyword Suggestions | `googleKeywordSuggestions` | Labs | Pre-indexed |
+| Related Keywords | `googleRelatedKeywords` | Labs | Pre-indexed |
+| Competitors | `googleCompetitorsDomain` | Labs | Pre-indexed |
+| Keyword Gap | `googleDomainIntersection` | Labs | Pre-indexed |
+| Backlinks | `summary`, `referring_domains`, `history` | Backlinks | Pre-indexed |
+| Site Audit | `task_post` + `pages` | On-Page | Live crawl |
+| AI Visibility | `llm_mentions`, `top_pages`, `aggregated_metrics` | AI Optimization | Live query |
+
+## API namespaces
+
+DataForSEO organizes its APIs into namespaces. RankLyft uses four of them:
+
+### Labs
+
+The DataForSEO Labs namespace contains Google-indexed SEO metrics — keywords a domain ranks for, traffic estimates, keyword ideas, and competitive overlap data. Results come from DataForSEO's own index, which they update continuously. Labs is the backbone of most RankLyft features.
+
+### SERP
+
+The SERP namespace performs actual Google searches and returns the real results page. RankLyft uses the async task variant (`googleOrganicTaskPost`) for position tracking: it submits a batch of keyword searches, waits for Google to return results, and stores the positions. This is slower and more expensive than Labs data, but it gives you the actual current SERP rather than an indexed estimate.
+
+### Backlinks
+
+The Backlinks namespace provides link data including referring domain counts, anchor text, and link history. Backlinks is a separate DataForSEO product with its own pricing tier and a $100/month minimum commitment. RankLyft hides Backlinks features behind a feature flag until you are ready to enable that spend.
+
+### On-Page
+
+The On-Page namespace crawls a website page-by-page and returns technical SEO audit data. Unlike Labs, On-Page sends real HTTP requests to your client's site. JavaScript-rendered pages cost significantly more because DataForSEO must run a headless browser.
+
+### AI Optimization
+
+The AI Optimization namespace queries large language models (ChatGPT, Perplexity, Gemini, etc.) and checks whether a domain appears in the responses. Because this requires making live LLM API calls, it is slower and more expensive per request than Labs. AI Optimization also carries a $100/month minimum commitment.
+
+<Info>
+  Not all DataForSEO namespaces are enabled by default in RankLyft. Backlinks and AI Optimization are gated behind feature flags because they carry separate minimum commitments. Contact your PageLyft administrator to enable them.
+</Info>
+
+## Data geography
+
+DataForSEO Labs data is pulled for **US English Google** results by default. Position tracking can be configured per-keyword to target different countries and languages. Site audits crawl the domain regardless of geography. AI Visibility queries are run against US-accessible LLM endpoints.
+
+## What RankLyft does not use
+
+RankLyft does not use Semrush, Ahrefs, Moz, Google Search Console, or any first-party Google API. All data is sourced exclusively through DataForSEO. If you notice a discrepancy between RankLyft and another tool, the difference is almost always attributable to index methodology, update frequency, or geographic targeting — not a RankLyft error.

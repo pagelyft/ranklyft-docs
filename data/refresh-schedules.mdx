@@ -1,0 +1,66 @@
+---
+title: "Refresh schedules"
+description: "RankLyft pulls fresh data on a fixed schedule. This page explains when each type of data updates and how to trigger an on-demand refresh."
+---
+
+RankLyft runs two automated cron jobs that keep your client data current. Most features refresh weekly. Position tracking refreshes daily. You can also trigger a manual refresh on any page that has a refresh button.
+
+## Weekly refresh — Mondays at 4:59 AM UTC
+
+The weekly cron runs once per week for every website in your account. It updates the data types that change slowly enough that daily updates would not justify the API cost.
+
+| Data type | Feature |
+|---|---|
+| Domain overview metrics | Domain Overview |
+| Historical rank trends | Domain Overview (trend charts) |
+| Organic keyword rankings | Organic Rankings |
+| Top pages by traffic | Top Pages |
+| Backlink summary and history | Backlinks (if enabled) |
+
+<Info>
+  The weekly cron runs at 4:59 AM UTC on Mondays. In US Eastern time, that is 11:59 PM Sunday night (12:59 AM Monday during EDT). Data is usually available by the time you open RankLyft on Monday morning.
+</Info>
+
+## Daily refresh — 6:00 AM UTC
+
+The daily cron runs every day and handles data types that require live queries.
+
+| Data type | Feature |
+|---|---|
+| Tracked keyword SERP positions | Position Tracking |
+| Scheduled site audit pages | Site Audit (when auto-schedule is on) |
+
+Position tracking submits a live Google search for every keyword you are tracking and records the result. Because this uses the SERP API rather than pre-indexed data, it captures actual real-time ranking positions — not estimates.
+
+<Tip>
+  Position tracking data for the current day appears after 6 AM UTC. If you check Position Tracking before 6 AM, you are seeing yesterday's positions.
+</Tip>
+
+## On-demand refreshes
+
+Every feature page in RankLyft includes a **Refresh** button. Clicking it immediately fires the same API call the cron would make and updates the displayed data. On-demand refreshes count against your DataForSEO balance the same as any other request.
+
+| Feature | Refresh behavior |
+|---|---|
+| Domain Overview | Re-fetches domain rank overview and historical data |
+| Organic Rankings | Re-fetches ranked keywords for the domain |
+| Top Pages | Re-fetches top relevant pages |
+| Position Tracking | Submits a new SERP task for all tracked keywords |
+| Site Audit | Starts a new full crawl |
+| AI Visibility | Runs a new live LLM query |
+
+Research tools (Keyword Overview, Keyword Research, Competitors, Keyword Gap) are always live — they run a fresh API call every time you submit a search, so they do not have a separate refresh concept.
+
+<Warning>
+  Running a manual refresh on Site Audit triggers a full recrawl of the domain. For large sites or sites with JavaScript rendering enabled, this can be expensive. See [DataForSEO cost breakdown](/data/dataforseo-costs) before refreshing audits on sites with thousands of pages.
+</Warning>
+
+## What triggers the first data pull
+
+When you add a new website to RankLyft, a full initial data fetch runs immediately — it does not wait for the next cron window. You get domain overview metrics, organic rankings, top pages, and historical data within seconds. Position tracking starts the following morning at the daily cron.
+
+## Checking when data was last updated
+
+Each feature page displays a "Last updated" timestamp near the top of the page. This reflects the last time RankLyft successfully received data from DataForSEO for that specific domain and data type.
+
+If a cron run fails for a specific domain (for example, due to a DataForSEO API error), the timestamp will not advance. RankLyft logs cron errors internally; if you notice stale data, contact your PageLyft administrator.
