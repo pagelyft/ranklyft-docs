@@ -3,9 +3,9 @@
   "name": "RankLyft",
   "theme": "mint",
   "colors": {
-    "primary": "#171717",
-    "light": "#f5f5f5",
-    "dark": "#171717"
+    "primary": "#FF006E",
+    "light": "#FF006E",
+    "dark": "#FF006E"
   },
   "favicon": "/favicon.svg",
   "logo": {
@@ -15,8 +15,8 @@
   "navbar": {
     "links": [
       {
-        "label": "RankLyft App",
-        "href": "https://rank.pagelyft.studio"
+        "label": "PageLyft",
+        "href": "https://pagelyft.studio"
       }
     ],
     "primary": {
@@ -122,7 +122,13 @@
   },
   "footer": {
     "socials": {
-      "website": "https://pagelyft.com"
+      "website": "https://pagelyft.studio",
+      "github": "https://github.com/pagelyft/ranklyft",
+      "linkedin": "https://www.linkedin.com/company/pagelyft/",
+      "x": "https://twitter.com/pagelyftstudio",
+      "instagram": "https://www.instagram.com/pagelyft/",
+      "facebook": "https://www.facebook.com/pagelyft/",
+      "youtube": "https://www.youtube.com/@pagelyft"
     }
   }
 }
