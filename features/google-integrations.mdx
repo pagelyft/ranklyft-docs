@@ -1,0 +1,79 @@
+---
+title: "Google Integrations"
+description: "Connect Google Search Console and Google Analytics 4 to enrich SEO data with real clicks, impressions, traffic, and engagement."
+---
+
+RankLyft's core data comes from DataForSEO, which provides estimated traffic and keyword metrics. Google Integrations supplement those estimates with first-party data from Google Search Console (GSC) and Google Analytics 4 (GA4), giving you real clicks, impressions, sessions, and engagement alongside the estimates.
+
+## What each integration unlocks
+
+| Integration | Feature | What it adds |
+|---|---|---|
+| Google Search Console | [Dashboard](/features/dashboard) | GSC Performance card with clicks, impressions, CTR, and avg. position |
+| Google Search Console | [Organic Rankings](/features/organic-rankings) | GSC-discovered keywords merged into the table with Clicks, Impressions, CTR, and data source badges |
+| Google Analytics 4 | [Dashboard](/features/dashboard) | GA4 Traffic card and GA4 Top Pageviews card |
+| Google Analytics 4 | [Traffic Analytics](/features/traffic-analytics) | Full traffic page with users, sessions, engagement, channels, and conversions |
+| Google Analytics 4 | [Top Pages](/features/top-pages) | Sessions, Bounce Rate, and Conversions columns overlaid on the page table |
+
+## Connecting Google Search Console
+
+<Steps>
+  <Step title="Open Integrations">
+    Navigate to **Settings > Integrations** from the global settings page.
+  </Step>
+  <Step title="Connect GSC">
+    Click **Connect** on the Google Search Console card. You'll be redirected to Google's OAuth consent screen.
+  </Step>
+  <Step title="Authenticate">
+    Sign in with a Google account that has access to the Search Console properties you want to connect. Grant RankLyft read-only access to your Search Console data.
+  </Step>
+  <Step title="Map properties">
+    After authenticating, expand the **Property Mapping** accordion. RankLyft auto-matches GSC properties to your websites by domain. If the auto-match is wrong, use the dropdown to select the correct property for each website.
+  </Step>
+</Steps>
+
+## Connecting Google Analytics 4
+
+<Steps>
+  <Step title="Open Integrations">
+    Navigate to **Settings > Integrations** from the global settings page.
+  </Step>
+  <Step title="Connect GA4">
+    Click **Connect** on the Google Analytics 4 card.
+  </Step>
+  <Step title="Authenticate">
+    Sign in with a Google account that has access to the GA4 properties you want to connect. Grant RankLyft read-only access to your Analytics data.
+  </Step>
+  <Step title="Map properties">
+    After authenticating, expand the **Property Mapping** accordion. Select the correct GA4 account and property for each website from the dropdowns.
+  </Step>
+</Steps>
+
+## Property mapping
+
+RankLyft attempts to auto-match GSC properties to websites by domain name. GA4 properties must be selected manually since GA4 account structures vary more widely. You can override any mapping at any time from the Integrations page.
+
+Each website can be mapped to one GSC property and one GA4 property. Multiple websites can share the same Google property if needed.
+
+<Info>
+  You can use a single Google account for both GSC and GA4 connections. The account's email must have at least read access to the properties you want to map.
+</Info>
+
+## Disconnecting
+
+Click **Disconnect** on either integration card to remove the OAuth connection. Disconnecting removes the stored OAuth token but does not delete previously synced data — historical GSC and GA4 data already saved in RankLyft will remain visible until the next sync cycle.
+
+<Warning>
+  If your Google OAuth token expires or is revoked (e.g., you removed RankLyft from your Google account permissions), the integration card will show a reconnect prompt. Syncs will pause until you reconnect.
+</Warning>
+
+## Data sync schedule
+
+GSC and GA4 data are synced on separate daily cron schedules:
+
+| Integration | Cron job | Details |
+|---|---|---|
+| Google Search Console | `cron-sync-gsc` | [Cron reference](/reference/cron-sync-gsc) |
+| Google Analytics 4 | `cron-sync-ga4` | [Cron reference](/reference/cron-sync-ga4) |
+
+See [Refresh Schedules](/data/refresh-schedules) for the full sync timeline.

@@ -1,45 +1,71 @@
 ---
 title: "Top Pages"
-description: "The 50 pages driving the most organic traffic to a domain, with estimated traffic value and change tracking."
+description: "The top pages driving organic traffic to a domain, with estimated traffic value, change tracking, and optional GA4 real traffic overlay."
 ---
 
-Top Pages shows which URLs on a client's site are actually delivering organic visitors. It surfaces the 50 highest-traffic pages by estimated organic visits, giving you a quick read on where the site's SEO value is concentrated.
+Top Pages shows which URLs on a client's site are actually delivering organic visitors. It surfaces the highest-traffic pages by estimated organic visits, giving you a quick read on where the site's SEO value is concentrated.
+
+When [Google Analytics 4](/features/google-integrations) is connected, real traffic columns are overlaid on the table, letting you compare DataForSEO estimates against actual sessions and engagement.
 
 ## Table columns
 
 | Column | Description |
 |---|---|
 | Page URL | The full URL of the page |
-| ETV | Estimated Traffic Value — the estimated monthly value of the organic traffic this page receives, in USD |
+| Change | Movement since the previous data pull: **New**, **Up**, **Down**, or **Lost** |
 | Keywords | The number of keywords this page ranks for in the top 100 |
-| Traffic Value | The estimated dollar value of the organic traffic this page drives |
-| Change | Movement since the previous data pull: **Up**, **Down**, **New**, or **Lost** |
+| Avg. Position | Average ranking position across all keywords the page ranks for |
+| Visibility | Keyword visibility score for the page |
+
+## Google Analytics 4 overlay
+
+When a GA4 property is connected, three additional columns appear in the table:
+
+| Column | Description |
+|---|---|
+| Sessions (GA4) | Real session count from Google Analytics for this page |
+| Bounce Rate (GA4) | Percentage of single-page sessions from GA4 |
+| Conversions (GA4) | Conversion events attributed to this page in GA4 |
+
+GA4 data is matched to pages by URL path. The overlay gives you ground-truth engagement data alongside DataForSEO's traffic estimates.
+
+<Info>
+  GA4 columns only appear when a GA4 property is connected to the website. See [Google Integrations](/features/google-integrations) for setup instructions.
+</Info>
+
+<Tip>
+  Compare the DataForSEO Visibility score against GA4 Sessions to assess how closely the estimates track actual traffic. Pages where estimates diverge significantly from GA4 data may indicate keyword cannibalization or traffic from non-organic sources.
+</Tip>
 
 ## Change tracking
 
-Each page is compared against the previous pull's estimated traffic value (ETV). The Change column reflects whether the page gained traffic, lost traffic, appeared for the first time, or dropped out of the top 50 entirely:
+Each page is compared against the previous pull's data. The Change column reflects whether the page gained traffic, lost traffic, appeared for the first time, or dropped out entirely:
 
 | Badge | Meaning |
 |---|---|
-| Up | The page's ETV increased since the last pull |
-| Down | The page's ETV decreased since the last pull |
-| New | The page entered the top 50 for the first time |
-| Lost | The page dropped out of the top 50 |
+| New | The page entered the top results for the first time |
+| Up | The page's metrics improved since the last pull |
+| Down | The page's metrics decreased since the last pull |
+| Lost | The page dropped out of the results |
 
 <Tip>
-  Pages marked **Lost** are worth investigating. A page that previously drove significant traffic and dropped out of the top 50 may have experienced a ranking drop, a crawl issue, or been removed. Cross-reference with Organic Rankings to see if its primary keywords also dropped.
+  Pages marked **Lost** are worth investigating. A page that previously drove significant traffic and dropped out may have experienced a ranking drop, a crawl issue, or been removed. Cross-reference with Organic Rankings to see if its primary keywords also dropped.
 </Tip>
 
 ## How to use Top Pages
 
-**Identify revenue-critical pages.** Sort by ETV to see which pages generate the most monetizable traffic. These are the pages where on-page issues or technical problems have the highest potential business impact.
+**Identify revenue-critical pages.** Sort by visibility to see which pages generate the most organic presence. These are the pages where on-page issues or technical problems have the highest potential business impact.
 
-**Find content gaps.** Pages with high keyword counts but low ETV are ranking for many low-value terms. Consider whether those pages could be optimized to target higher-value queries.
+**Find content gaps.** Pages with high keyword counts but low visibility are ranking for many terms in weak positions. Consider whether those pages could be optimized to target higher-value queries.
 
-**Spot early declines.** Pages marked Down with significant ETV drops often signal a ranking problem before it becomes visible in overall traffic numbers. Check these pages in Organic Rankings to identify which specific keywords are falling.
+**Spot early declines.** Pages marked Down often signal a ranking problem before it becomes visible in overall traffic numbers. Check these pages in Organic Rankings to identify which specific keywords are falling.
 
 **Brief content teams.** Export the table and share with content or development teams to prioritize page-level work based on actual traffic impact rather than assumptions.
 
+## Exporting data
+
+Click the **Export CSV** button to download the current filtered view. The CSV export includes GA4 columns when they are visible, so what you see in the table is what you get in the download.
+
 ## Data freshness
 
-Top Pages data is fetched when you add a website and refreshed on the standard schedule. See [Refresh Schedules](/data/refresh-schedules) for update frequency.
+Top Pages data is fetched when you add a website and refreshed on the standard schedule. GA4 overlay data syncs daily via `cron-sync-ga4`. See [Refresh Schedules](/data/refresh-schedules) for update frequency.

@@ -1,54 +1,127 @@
 ---
 title: "Domain Overview"
-description: "A full historical view of a domain's organic and paid search footprint, including trend charts, position distribution, and keyword movement counts."
+description: "A comprehensive view of a domain's organic, paid, and AI search presence with trend charts, keyword analysis, position distribution, and tracked competitors."
 ---
 
-Domain Overview gives you the complete picture of a domain's search presence over time. Where the Dashboard shows the current snapshot, Domain Overview shows how that snapshot has changed month over month going back to January of the prior year.
+Domain Overview gives you the complete picture of a domain's search presence. Where the Dashboard shows a quick snapshot, Domain Overview provides deep analysis across SEO metrics, historical trends, keyword breakdowns, and AI search visibility — all on a single page.
 
-## Metric cards
+## Summary cards
 
-At the top of the page, four metric cards display the domain's current organic and paid performance:
+Two panels at the top of the page display the domain's current performance:
 
-| Card | What it shows |
+### AI Search card
+
+When [AI Visibility](/features/ai-visibility) is enabled, this card shows how the domain appears across AI platforms:
+
+| Metric | What it shows |
 |---|---|
+| Mentions | Total times the domain was mentioned in AI responses |
+| Citations | Times the domain was cited as a source |
+| Citation Rate | Percentage of mentions that include a citation link |
+
+A per-platform breakdown shows visibility across ChatGPT, Google AI Overview, Gemini, Perplexity, and Claude.
+
+### SEO card
+
+The SEO card displays the domain's core search metrics:
+
+| Metric | What it shows |
+|---|---|
+| Authority Score | Domain authority rating with a quality badge (Excellent, Good, Fair, Fine, or Low) |
 | Organic Traffic | Estimated monthly organic visits |
-| Organic Keywords | Total keywords the domain currently ranks for |
 | Paid Traffic | Estimated monthly traffic from paid search |
-| Paid Keywords | Keywords the domain is actively buying in Google Ads |
+| Ref. Domains | Count of unique referring domains |
+| Traffic Value | Estimated monthly value of organic traffic in USD |
+| Organic Keywords | Total keywords the domain ranks for |
+| Paid Keywords | Keywords the domain buys in Google Ads |
+| Backlinks | Total backlinks pointing to the domain |
 
-## Position distribution chart
+<Info>
+  Ref. Domains and Backlinks metrics are gated behind the backlinks feature flag. They appear as dashes when backlinks data is not enabled.
+</Info>
 
-Below the metric cards, a bar chart breaks down all ranked keywords by their current position. RankLyft uses 12 buckets:
+## SEO / AI Search section
 
-`#1` · `#2` · `#3` · `#4–5` · `#6–7` · `#8–10` · `#11–15` · `#16–20` · `#21–30` · `#31–50` · `#51–75` · `#76–100`
+Below the summary cards, a tabbed interface provides deep analysis with a time range filter (1M, 6M, 1Y, 2Y, All):
 
-This chart tells you whether a domain's rankings are concentrated at the top (a strong, established site) or spread across mid and lower positions (a newer or recovering site). A healthy domain typically shows a right-skewed distribution with more keywords in positions 1–10.
+### Google Search tab
 
-## Historical trend charts
+The Google Search tab contains five visualizations:
 
-Two line charts plot monthly data from January of the prior year through the current month:
+**Traffic chart** — a line chart plotting estimated organic traffic over time. Use this to identify seasonality, algorithm update impacts, and growth trends.
 
-- **Organic Traffic trend** — estimated monthly visits over time
-- **Organic Keywords trend** — total ranked keywords over time
+**Keywords stacked chart** — an area chart showing total ranked keywords over time, stacked by position range. This reveals whether keyword growth is coming from top positions or lower-ranked terms.
 
-Use these charts to identify seasonality, detect the impact of algorithm updates, and demonstrate growth (or flag declines) to clients during monthly reviews.
+**Country table** — a breakdown of organic traffic by country, showing estimated traffic and keyword counts per geography.
+
+**Branded bar** — shows the split between branded and non-branded organic traffic.
+
+**SERP feature donut** — a donut chart showing which SERP features (featured snippets, People Also Ask, image packs, etc.) the domain appears in and how frequently.
+
+### AI Search tab
+
+When AI Visibility is enabled, this tab shows AI mention trends over time across platforms.
 
 <Tip>
-  Algorithm updates often cause sudden drops or spikes across multiple months. If you see a sharp movement in the trend chart, cross-reference it with major Google update dates to determine whether the change was site-specific or industry-wide.
+  Algorithm updates often cause sudden drops or spikes in the traffic chart. If you see a sharp movement, cross-reference it with major Google update dates to determine whether the change was site-specific or industry-wide.
 </Tip>
 
-## Movement counts
+## Top organic keywords
 
-Below the charts, four counters show keyword movement since the last data pull:
+A table of the domain's top ranked keywords by estimated traffic. Each row shows the keyword, position, search volume, and traffic. Click **View all** to open the full [Organic Rankings](/features/organic-rankings) report.
 
-| Counter | Meaning |
+## Position distribution
+
+A donut chart breaks down all ranked keywords into five position buckets:
+
+| Bucket | Positions |
+|---|---|
+| Top 3 | 1–3 |
+| Top 10 | 4–10 |
+| Top 20 | 11–20 |
+| Top 50 | 21–50 |
+| Top 100 | 51–100 |
+
+A healthy domain typically shows a larger share in the top 10, indicating strong rankings. A distribution skewed toward 51–100 suggests the domain is gaining visibility but hasn't broken through to competitive positions yet.
+
+## Keywords by intent
+
+Four intent categories show how the domain's keywords are distributed by search intent:
+
+| Intent | Description |
+|---|---|
+| Informational | Searches seeking information or answers |
+| Navigational | Searches for a specific website or brand |
+| Commercial | Research-oriented searches comparing products or services |
+| Transactional | Searches with purchase or action intent |
+
+Each category displays its keyword count and estimated traffic contribution.
+
+## Keyword movement
+
+A bar chart visualizes keyword changes since the last data pull:
+
+| Bar | Meaning |
 |---|---|
 | New | Keywords that appeared in rankings for the first time |
-| Up | Keywords that improved in position |
-| Down | Keywords that dropped in position |
+| Improved | Keywords that moved to a better position |
+| Declined | Keywords that dropped in position |
 | Lost | Keywords that fell out of the top 100 entirely |
 
-Movement counts give you a quick health check without having to sort through the full Organic Rankings table. A large "Lost" number warrants investigation in [Organic Rankings](/features/organic-rankings).
+Each bar is clickable — clicking one opens [Organic Rankings](/features/organic-rankings) filtered to that movement type.
+
+## Tracked competitors
+
+A read-only table shows the competitor domains you've configured in [Site Settings](/features/site-settings):
+
+| Column | Description |
+|---|---|
+| Domain | The competitor's domain name |
+| Keywords | Total organic keywords the competitor ranks for |
+| Traffic | Estimated monthly organic traffic |
+| Traffic Value | Estimated monthly value of organic traffic in USD |
+
+Click **Manage** to go to [Site Settings > Competitors](/features/site-settings#competitors) where you can add or remove tracked competitors.
 
 ## Data freshness
 

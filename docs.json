@@ -59,6 +59,7 @@
               "features/domain-overview",
               "features/organic-rankings",
               "features/position-tracking",
+              "features/traffic-analytics",
               "features/top-pages",
               "features/backlinks",
               "features/site-audit",
@@ -72,6 +73,13 @@
               "features/keyword-research",
               "features/competitors",
               "features/keyword-gap"
+            ]
+          },
+          {
+            "group": "Settings & integrations",
+            "pages": [
+              "features/google-integrations",
+              "features/site-settings"
             ]
           }
         ]

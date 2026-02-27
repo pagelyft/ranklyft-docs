@@ -1,9 +1,33 @@
 ---
 title: "Organic Rankings"
-description: "A filterable, exportable table of the top 100 keywords a domain currently ranks for in Google, with position, intent, traffic, and competitive metrics."
+description: "A filterable, exportable table of the top keywords a domain ranks for in Google, merging DataForSEO estimates with real Google Search Console data when connected."
 ---
 
 Organic Rankings gives you a full view of a domain's current keyword footprint. Every keyword the domain ranks for in the top 100 positions appears here, with enough data to prioritize content work, identify quick wins, and monitor position changes over time.
+
+When [Google Search Console](/features/google-integrations) is connected, GSC-discovered keywords are merged into the table alongside DataForSEO data, giving you real click and impression counts next to estimated metrics.
+
+## Google Search Console integration
+
+When a GSC property is mapped to the website, Organic Rankings merges two data sources into a single table. Each keyword gets a data source badge:
+
+| Badge | Meaning |
+|---|---|
+| DataForSEO | Keyword found via DataForSEO's index only |
+| GSC | Keyword discovered through Google Search Console only |
+| Both | Keyword appears in both DataForSEO and GSC data |
+
+<Info>
+  GSC-only keywords show dashes for Intent, KD%, and Competition since those metrics come from DataForSEO's index and aren't available for keywords only discovered through Search Console.
+</Info>
+
+<Info>
+  The number of GSC-discovered keywords displayed is subject to your subscription plan limit. Upgrade your plan to see more GSC keywords.
+</Info>
+
+## Position changes chart
+
+Above the table, a small chart shows the breakdown of keyword movements (New, Up, Down, Lost) at a glance. Use this to quickly gauge whether the domain is trending positively or negatively before diving into the table.
 
 ## Table columns
 
@@ -11,13 +35,15 @@ Organic Rankings gives you a full view of a domain's current keyword footprint. 
 |---|---|
 | Keyword | The search query. Links to the Keyword Overview page for that term. |
 | Intent | Search intent badge: **I** (Informational), **N** (Navigational), **C** (Commercial), **T** (Transactional) |
-| Position | Current Google ranking. Color-coded: green for 1–3, yellow for 4–10, orange for 11–20, gray for 21+. |
+| Position | Current Google ranking. Color-coded: green for 1–10, blue for 10–30, yellow for 30+. |
 | Change | Movement since last pull. Shows an up or down arrow with the number of positions moved, **NEW** for first-time appearances, or **LOST** for keywords that dropped out. |
+| Traffic | Estimated monthly organic visits the domain receives from this keyword |
 | KD% | Keyword Difficulty, 0–100. Higher scores mean more competition. |
 | Volume | Estimated monthly search volume |
-| Traffic | Estimated monthly organic visits the domain receives from this keyword |
-| CPC | Cost per click in Google Ads, in USD |
-| Competition | Paid search competition level (0–1 scale) |
+| Clicks | Real clicks from Google search results (GSC data) |
+| Impressions | Real impressions in Google search results (GSC data) |
+| CTR | Real click-through rate from search results (GSC data) |
+| Source | Data source badge: DataForSEO, GSC, or Both |
 
 ## Position distribution bar
 
@@ -25,13 +51,17 @@ Above the table, a horizontal bar shows the proportion of ranked keywords across
 
 ## Filters
 
-Use URL-based filters to narrow the table without losing your place. The following filter parameters appear in the URL when active:
+Use URL-based filters to narrow the table. Filters are reflected in the URL so you can share filtered views:
 
 | Filter | Parameter | Description |
 |---|---|---|
-| Minimum position | `pos_min` | Show only keywords at or below this position number |
-| Maximum position | `pos_max` | Show only keywords at or above this position number |
+| Tab | `tab` | Filter by movement type: All, New, Up, Down, or Lost |
+| Position range | `pos` | Quick-filter pills for common ranges (Top 3, 4–10, 11–20, etc.) |
+| Min position | `pos_min` | Show only keywords at or below this position number |
+| Max position | `pos_max` | Show only keywords at or above this position number |
 | Change type | `change` | Filter by movement: `new`, `up`, `down`, or `lost` |
+| Device | `device` | Filter by device type (Desktop, Mobile, Tablet) |
+| Days | `days` | Time range for GSC data |
 
 <Tip>
   To build a striking-distance report, set `pos_min=11` and `pos_max=20`. You'll see every keyword within range of page one.

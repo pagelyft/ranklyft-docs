@@ -1,0 +1,89 @@
+---
+title: "Site Settings"
+description: "Per-site configuration including display name, competitor tracking, crawl scheduling, and notifications."
+---
+
+Site Settings lets you configure each website individually. Access it from the **Site Settings** link in the sidebar or navigate directly to `/{slug}/settings`.
+
+The settings page is organized into four tabs:
+
+## General
+
+The General tab manages basic site identity and provides a way to remove the site.
+
+### Domain
+
+Displays the website's domain (read-only). The domain is set when you add the website and cannot be changed.
+
+### Display name
+
+An optional label that replaces the domain throughout the RankLyft UI. Useful when managing multiple sites for the same client or when the domain isn't descriptive (e.g., labeling `acme.com` as "Acme Corp").
+
+### Danger zone
+
+The **Remove site** button permanently hides the website and all its associated SEO data from RankLyft. A confirmation dialog requires you to acknowledge the action before proceeding.
+
+<Warning>
+  Removing a site hides it and all its data. This action cannot be undone from the UI.
+</Warning>
+
+## Competitors
+
+Track up to 5 competitor domains alongside your site. The competitors table displays:
+
+| Column | Description |
+|---|---|
+| Domain | The competitor's domain name |
+| Keywords | Total organic keywords the competitor ranks for |
+| Est. Traffic | Estimated monthly organic traffic |
+| Traffic Value | Estimated monthly value of organic traffic in USD |
+
+Competitors you add here also appear as a read-only table on the [Domain Overview](/features/domain-overview) page. Use the **Manage** link on Domain Overview to return to this settings page.
+
+<Tip>
+  Use the [Competitors](/features/competitors) research tool to discover competitor domains before adding them here. The research tool shows domain overlap metrics that help you choose the most relevant competitors to track.
+</Tip>
+
+## Crawl Settings
+
+Crawl Settings control how [Site Audit](/features/site-audit) crawls your website, both for manual runs and scheduled audits.
+
+### Schedule
+
+Choose how often audits run automatically:
+
+| Option | Behavior |
+|---|---|
+| Once | Run manually only — no automatic schedule |
+| Daily | Crawl every day |
+| Weekly | Crawl on a specific day of the week (selectable) |
+| Monthly | Crawl on the same day each month |
+
+Scheduled audits are executed by the [`cron-run-scheduled-audits`](/reference/cron-run-scheduled-audits) daily cron job.
+
+### Crawl limits
+
+| Setting | Default | Range | Description |
+|---|---|---|---|
+| Max pages | 500 | 1–10,000 | Maximum number of pages to crawl per audit |
+| Max depth | Unlimited | 1–20 | How many link levels deep the crawler follows from the homepage |
+
+### Crawler behavior
+
+Three toggles control how the crawler operates:
+
+| Toggle | Default | Description |
+|---|---|---|
+| Include subdomains | Off | Crawl pages on subdomains (e.g., `blog.example.com`) in addition to the root domain |
+| Respect sitemap | Off | Prioritize URLs listed in `sitemap.xml` |
+| JavaScript rendering | Off | Render pages with a headless browser before crawling. Required for SPAs and JS-heavy sites. |
+
+<Warning>
+  JavaScript rendering increases the cost per crawled page by approximately 10x. Only enable it if the site requires JavaScript to render its content. Most static or server-rendered sites do not need it.
+</Warning>
+
+## Notifications
+
+<Info>
+  Notifications are coming soon. Email alerts for ranking changes, crawl errors, and new backlink opportunities will be available in a future update.
+</Info>

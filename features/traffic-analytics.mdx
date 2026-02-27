@@ -1,0 +1,65 @@
+---
+title: "Traffic Analytics"
+description: "GA4-powered traffic overview showing real users, sessions, engagement, and top pages for a connected website."
+---
+
+Traffic Analytics gives you a real-traffic view of a website's performance using data from Google Analytics 4. Unlike the estimated traffic numbers on Domain Overview, everything on this page comes directly from GA4 — actual users, sessions, engagement metrics, and conversions.
+
+<Info>
+  Traffic Analytics requires a connected GA4 property. If no property is linked, you'll see an empty state with a link to connect one. See [Google Integrations](/features/google-integrations) for setup instructions.
+</Info>
+
+## Date range selector
+
+Use the date range selector at the top of the page to control the reporting window. The range is controlled by a `?days=` URL parameter:
+
+| Parameter | Default | Range |
+|---|---|---|
+| `days` | 30 | 1–365 |
+
+All metrics, charts, and tables on the page update to reflect the selected range. Period-over-period comparisons use the equivalent prior period (e.g., 30 days vs. the previous 30 days).
+
+## Summary metrics
+
+Six metric cards appear at the top of the page, each with a period-over-period change badge showing the percentage increase or decrease compared to the previous period:
+
+| Metric | What it shows |
+|---|---|
+| Users | Unique visitors during the selected period |
+| Sessions | Total sessions started |
+| Engaged Sessions | Sessions lasting longer than 10 seconds, with a conversion, or with 2+ page views |
+| Avg. Engagement | Average engagement time per session (displayed as MM:SS) |
+| Engagement Rate | Percentage of sessions that were engaged |
+| Conversion Rate | Percentage of sessions that resulted in a conversion event |
+
+## Traffic trend chart
+
+A line/area chart plots daily sessions and users over time, broken down by traffic channel. Use this to spot trends, traffic spikes, or drops correlated with marketing campaigns or algorithm updates.
+
+## Channel breakdown
+
+A pie chart and table show traffic distribution across acquisition channels:
+
+- **Organic Search** — visitors from unpaid search results
+- **Direct** — visitors who typed the URL directly
+- **Referral** — visitors from links on other sites
+- **Paid Social** — visitors from paid social campaigns
+- **Display** — visitors from display ad campaigns
+- **Email** — visitors from email campaigns
+- **Other** — all remaining channels
+
+## Device breakdown
+
+A table showing user counts split by device type: Desktop, Mobile, and Tablet.
+
+## Country breakdown
+
+A table of the top 10 countries by user count, paired with a geographic map visualization.
+
+<Tip>
+  Cross-reference Traffic Analytics with [Organic Rankings](/features/organic-rankings) to compare real GA4 traffic against DataForSEO's estimated organic traffic. This helps you calibrate how closely the estimates track actual performance.
+</Tip>
+
+## Data freshness
+
+GA4 data is synced daily via the `cron-sync-ga4` job. There is typically a 24–48 hour delay between when a visit occurs in GA4 and when it appears in RankLyft. See [Refresh Schedules](/data/refresh-schedules) for timing details.

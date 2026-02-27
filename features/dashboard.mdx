@@ -1,15 +1,17 @@
 ---
 title: "Dashboard"
-description: "A high-level snapshot of a client's SEO performance, pulled from the five core widgets RankLyft displays when you open a website."
+description: "A high-level snapshot of a client's SEO and traffic performance, combining DataForSEO estimates with live Google Analytics and Search Console data."
 ---
 
-The Dashboard is the first screen you see when you open a website. It gives you a quick read on organic performance, tracked keyword health, and quick-win opportunities — all without navigating to a deeper report.
+The Dashboard is the first screen you see when you open a website. It gives you a quick read on organic performance, real traffic from Google integrations, tracked keyword health, and quick-win opportunities — all without navigating to a deeper report.
+
+When [Google Integrations](/features/google-integrations) are connected, additional cards appear showing real GA4 traffic and GSC search performance alongside the DataForSEO estimates.
 
 ## Widgets
 
-### SEO Overview
+### SEO Summary
 
-The SEO Overview card shows the domain's current estimated organic footprint with five metrics, each paired with a sparkline showing recent trend direction:
+The SEO Summary card shows the domain's current estimated organic footprint with five metrics, each paired with a sparkline showing recent trend direction:
 
 | Metric | What it shows |
 |---|---|
@@ -20,6 +22,56 @@ The SEO Overview card shows the domain's current estimated organic footprint wit
 | Referring Domains | Count of unique domains linking to the site |
 
 The sparklines reflect the last several months of data. Use them to spot sudden drops or growth before digging into the full trend chart in Domain Overview.
+
+### GA4 Traffic Card
+
+Shows a summary of real website traffic from Google Analytics 4:
+
+| Metric | What it shows |
+|---|---|
+| Users | Unique visitors during the period |
+| Sessions | Total sessions started |
+| Engaged Sessions | Sessions lasting 10+ seconds, with a conversion, or 2+ page views |
+| Avg. Engagement | Average engagement time per session |
+| Engagement Rate | Percentage of engaged sessions |
+
+A channel trend chart below the metrics shows how traffic is distributed across acquisition channels over time.
+
+<Info>
+  This card only appears when a GA4 property is connected. See [Google Integrations](/features/google-integrations) for setup. For the full traffic breakdown, visit [Traffic Analytics](/features/traffic-analytics).
+</Info>
+
+### GA4 Top Pageviews
+
+A table showing the top pages by pageviews from GA4:
+
+| Column | What it shows |
+|---|---|
+| Page | The page path |
+| Pageviews | Total pageviews during the period |
+| Users | Unique users who viewed the page |
+| Avg. Time on Page | Average time users spent on the page |
+
+<Info>
+  This card only appears when a GA4 property is connected.
+</Info>
+
+### GSC Performance Card
+
+Shows real search performance data from Google Search Console:
+
+| Metric | What it shows |
+|---|---|
+| Total Clicks | Clicks from Google search results |
+| Total Impressions | Times the site appeared in search results |
+| Avg. CTR | Average click-through rate |
+| Avg. Position | Average ranking position across all queries |
+
+Below the metrics, a mini-table lists the top 5 search queries by clicks.
+
+<Info>
+  This card only appears when a GSC property is connected. See [Google Integrations](/features/google-integrations) for setup. For full keyword-level GSC data, visit [Organic Rankings](/features/organic-rankings).
+</Info>
 
 ### Position Tracking Card
 
@@ -53,4 +105,4 @@ Each row shows the keyword, its current position, and monthly search volume. Cli
 
 ## Refreshing data
 
-Dashboard data reflects the most recent fetch RankLyft has completed for the domain. RankLyft refreshes domain overview and ranking data on a scheduled basis. To see when each data type was last updated, refer to [Refresh Schedules](/data/refresh-schedules).
+Dashboard data reflects the most recent fetch RankLyft has completed for the domain. DataForSEO metrics refresh on the standard schedule, while GA4 and GSC data sync on their own daily cron jobs (`cron-sync-ga4` and `cron-sync-gsc`). To see when each data type was last updated, refer to [Refresh Schedules](/data/refresh-schedules).

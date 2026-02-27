@@ -3,7 +3,7 @@ title: "Cron Schedules"
 description: "Overview of all scheduled background jobs, their triggers, and what each one does."
 ---
 
-RankLyft runs six cron jobs configured in `vercel.ts`. All jobs run in the Vercel Production environment only. They do not run on Preview or Development deployments.
+RankLyft runs seven cron jobs configured in `vercel.ts`. All jobs run in the Vercel Production environment only. They do not run on Preview or Development deployments.
 
 ## Cron jobs
 
@@ -14,11 +14,8 @@ RankLyft runs six cron jobs configured in `vercel.ts`. All jobs run in the Verce
 | [Track Positions](/reference/cron-track-positions) | `/api/cron/track-positions` | `0 6 * * *` | Every day at 6:00 AM UTC |
 | [Run Scheduled Audits](/reference/cron-run-scheduled-audits) | `/api/cron/run-scheduled-audits` | `0 7 * * *` | Every day at 7:00 AM UTC |
 | [Sync GSC](/reference/cron-sync-gsc) | `/api/cron/sync-gsc` | `30 7 * * *` | Every day at 7:30 AM UTC |
+| [Sync GA4](/reference/cron-sync-ga4) | `/api/cron/sync-ga4` | `0 8 * * *` | Every day at 8:00 AM UTC |
 | [Aggregate GSC](/reference/cron-aggregate-gsc) | `/api/cron/aggregate-gsc` | `0 3 1 * *` | 1st of each month at 3:00 AM UTC |
-
-<Info>
-  The [Sync GA4](/reference/cron-sync-ga4) job exists but is not yet scheduled in `vercel.ts`. It can be triggered manually.
-</Info>
 
 ## Authentication
 
@@ -65,6 +62,12 @@ Imports the last 3 days of Google Search Console search analytics data for all u
 
 See [Cron: Sync GSC](/reference/cron-sync-gsc) for full details.
 
+### Sync GA4 — daily at 8:00 AM UTC
+
+Imports Google Analytics 4 traffic data for all users with a connected Google account. Fetches the last 3 days of daily rows and the last 30 days of page/country aggregated data.
+
+See [Cron: Sync GA4](/reference/cron-sync-ga4) for full details.
+
 ### Aggregate GSC — monthly on the 1st at 3:00 AM UTC
 
 Storage optimization. Compresses daily GSC rows older than 2 years into weekly summaries (summed clicks/impressions, weighted average position).
@@ -81,6 +84,7 @@ Daily timeline (UTC):
 06:00  Track Positions (300s max)
 07:00  Run Scheduled Audits (300s max)
 07:30  Sync GSC (300s max)
+08:00  Sync GA4 (300s max)
 ```
 
 On Mondays, Refresh Websites runs before the daily jobs:
@@ -92,6 +96,7 @@ Monday timeline (UTC):
 06:00  Track Positions starts
 07:00  Run Scheduled Audits starts
 07:30  Sync GSC starts
+08:00  Sync GA4 starts
 ```
 
 On the 1st of each month, Aggregate GSC also runs:
@@ -103,6 +108,7 @@ On the 1st of each month, Aggregate GSC also runs:
 06:00  Track Positions
 07:00  Run Scheduled Audits
 07:30  Sync GSC
+08:00  Sync GA4
 ```
 
 ## Subscription filtering
@@ -129,6 +135,7 @@ export const config: VercelConfig = {
     { path: "/api/cron/track-positions", schedule: "0 6 * * *" },
     { path: "/api/cron/run-scheduled-audits", schedule: "0 7 * * *" },
     { path: "/api/cron/sync-gsc", schedule: "30 7 * * *" },
+    { path: "/api/cron/sync-ga4", schedule: "0 8 * * *" },
     { path: "/api/cron/aggregate-gsc", schedule: "0 3 1 * *" },
     { path: "/api/cron/recover-audits", schedule: "0 5 * * *" },
   ],
@@ -160,7 +167,7 @@ curl https://rank.pagelyft.studio/api/cron/run-scheduled-audits \
 curl https://rank.pagelyft.studio/api/cron/sync-gsc \
   -H "Authorization: Bearer $CRON_SECRET"
 
-# Google Analytics 4 sync (not scheduled yet)
+# Google Analytics 4 sync
 curl https://rank.pagelyft.studio/api/cron/sync-ga4 \
   -H "Authorization: Bearer $CRON_SECRET"
 

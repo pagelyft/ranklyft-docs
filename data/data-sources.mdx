@@ -1,9 +1,11 @@
 ---
 title: "Data sources"
-description: "Every data point in RankLyft comes from the DataForSEO API. This page maps each feature to the specific API endpoint that powers it."
+description: "RankLyft combines DataForSEO estimates with optional first-party data from Google Search Console and Google Analytics 4. This page maps each feature to the API that powers it."
 ---
 
-RankLyft does not maintain its own index. All SEO data — keyword rankings, backlinks, traffic estimates, SERP positions, site audit results, and AI mention data — comes from [DataForSEO](https://dataforseo.com), a pay-per-call API used by many enterprise SEO platforms.
+RankLyft does not maintain its own index. The primary source of SEO data — keyword rankings, backlinks, traffic estimates, SERP positions, site audit results, and AI mention data — is [DataForSEO](https://dataforseo.com), a pay-per-call API used by many enterprise SEO platforms.
+
+In addition to DataForSEO, RankLyft optionally connects to **Google Search Console** and **Google Analytics 4** for real first-party data. When connected, GSC provides actual clicks, impressions, and CTR, while GA4 provides real sessions, engagement, and conversions. See [Google Integrations](/features/google-integrations) for setup instructions.
 
 Understanding which API backs each feature helps you interpret data freshness, understand cost drivers, and set accurate expectations with clients.
 
@@ -35,6 +37,8 @@ Most of RankLyft's features use pre-indexed data. Live queries are reserved for 
 | Backlinks | `summary`, `referring_domains`, `history` | Backlinks | Pre-indexed |
 | Site Audit | `task_post` + `pages` | On-Page | Live crawl |
 | AI Visibility | `llm_mentions`, `top_pages`, `aggregated_metrics` | AI Optimization | Live query |
+| Traffic Analytics | GA4 Data API | Google Analytics 4 | Real (first-party) |
+| GSC Performance | Search Console API | Google Search Console | Real (first-party) |
 
 ## API namespaces
 
@@ -64,10 +68,19 @@ The AI Optimization namespace queries large language models (ChatGPT, Perplexity
   Not all DataForSEO namespaces are enabled by default in RankLyft. Backlinks and AI Optimization are gated behind feature flags because they carry separate minimum commitments. Contact your PageLyft administrator to enable them.
 </Info>
 
+### Google APIs
+
+RankLyft optionally connects to two Google APIs to supplement DataForSEO estimates with real first-party data:
+
+- **Google Search Console API** — provides actual clicks, impressions, CTR, and average position from Google search results. GSC data is merged into the [Organic Rankings](/features/organic-rankings) table and shown on the [Dashboard](/features/dashboard) GSC Performance card.
+- **Google Analytics 4 Data API** — provides real sessions, users, engagement metrics, bounce rates, and conversions. GA4 data powers the [Traffic Analytics](/features/traffic-analytics) page, the Dashboard GA4 cards, and the [Top Pages](/features/top-pages) GA4 overlay.
+
+Unlike DataForSEO, which provides estimates based on its own index, Google APIs return real data from the actual Google properties. This makes them ideal for validating estimates and reporting actual performance to clients. Both integrations are optional — all core features work with DataForSEO alone.
+
 ## Data geography
 
 DataForSEO Labs data is pulled for **US English Google** results by default. Position tracking can be configured per-keyword to target different countries and languages. Site audits crawl the domain regardless of geography. AI Visibility queries are run against US-accessible LLM endpoints.
 
 ## What RankLyft does not use
 
-RankLyft does not use Semrush, Ahrefs, Moz, Google Search Console, or any first-party Google API. All data is sourced exclusively through DataForSEO. If you notice a discrepancy between RankLyft and another tool, the difference is almost always attributable to index methodology, update frequency, or geographic targeting — not a RankLyft error.
+RankLyft does not use Semrush, Ahrefs, or Moz. SEO estimate data is sourced through DataForSEO, and real traffic and search data comes from optional Google Search Console and Google Analytics 4 connections. If you notice a discrepancy between RankLyft and another tool, the difference is almost always attributable to index methodology, update frequency, or geographic targeting — not a RankLyft error.

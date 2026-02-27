@@ -5,17 +5,13 @@ description: "Technical reference for the Google Analytics 4 data sync job at /a
 
 The Sync GA4 cron job imports traffic and engagement data from Google Analytics 4 for all users who have connected their Google account with Analytics permissions. It follows the same pattern as the [GSC sync job](/reference/cron-sync-gsc) — refresh tokens, fetch recent data, log results.
 
-<Warning>
-  This cron job exists but is **not yet scheduled** in `vercel.ts`. It must be added to the cron configuration before it will run automatically. Currently it can only be triggered manually.
-</Warning>
-
 ## Endpoint
 
 ```
 GET /api/cron/sync-ga4
 ```
 
-**Schedule:** Not yet scheduled (add to `vercel.ts` to enable)
+**Schedule:** Daily at 8:00 AM UTC (`0 8 * * *`)
 **Max duration:** 300 seconds
 **Auth:** `Authorization: Bearer {CRON_SECRET}`
 
@@ -97,7 +93,7 @@ curl https://rank.pagelyft.studio/api/cron/sync-ga4 \
   -H "Authorization: Bearer $CRON_SECRET"
 ```
 
-Since this job is not yet scheduled, manual triggering is the only way to run it currently.
+Use this after connecting a new Google Analytics property or after a failed daily run.
 
 ## Supabase client used
 

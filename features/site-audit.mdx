@@ -7,34 +7,18 @@ Site Audit crawls a client's website and produces a technical SEO health report.
 
 ## Starting a crawl
 
-Click **Run Audit** to open the audit settings dialog before your first crawl. You can also re-open settings at any time to adjust parameters for the next run.
+Crawl configuration — page limits, depth, crawler behavior, and schedule — is managed in [Site Settings > Crawl Settings](/features/site-settings#crawl-settings). The **Run Audit** button on the Site Audit page starts a crawl using those saved settings.
 
 <Steps>
-  <Step title="Set the page limit">
-    Choose how many pages to crawl. The default is **500 pages**. Larger sites may need a higher limit, but this increases both crawl time and API cost. For most agency clients, 500 pages covers the full site.
-  </Step>
-  <Step title="Set the crawl depth">
-    Max depth controls how many levels of links the crawler follows from the homepage. A depth of 3 reaches pages linked from pages linked from the homepage. Leave this at the default unless you have a specific reason to limit it.
-  </Step>
-  <Step title="Configure crawl options">
-    Three optional settings affect how the crawler behaves:
-
-    - **Include subdomains** — crawl pages on subdomains (e.g., `blog.example.com`) in addition to the root domain
-    - **Respect sitemap** — prioritize URLs listed in `sitemap.xml`
-    - **JavaScript rendering** — render pages with a headless browser before crawling. Required for sites that load content via JavaScript. Note: JS rendering costs approximately 10x more per page than a standard crawl.
-  </Step>
-  <Step title="Set the schedule">
-    Choose how often the audit should run automatically:
-
-    - **Once** — run the crawl now and do not repeat
-    - **Daily** — crawl every day
-    - **Weekly** — choose a day of the week for the crawl to run
-    - **Monthly** — crawl on the same day each month
+  <Step title="Configure crawl settings">
+    Before your first crawl, visit [Site Settings > Crawl Settings](/features/site-settings#crawl-settings) to set the page limit, crawl depth, crawler behavior (subdomains, sitemap, JS rendering), and schedule.
   </Step>
   <Step title="Start the crawl">
-    Click **Start Audit**. RankLyft queues the crawl via the DataForSEO On-Page API. The crawl runs asynchronously — you can navigate away and return later. RankLyft polls for results every 10 seconds while you're on the page.
+    Return to the Site Audit page and click **Run Audit**. RankLyft queues the crawl via the DataForSEO On-Page API. The crawl runs asynchronously — you can navigate away and return later. RankLyft polls for results every 10 seconds while you're on the page.
   </Step>
 </Steps>
+
+Scheduled audits run automatically via the [`cron-run-scheduled-audits`](/reference/cron-run-scheduled-audits) daily cron job, using the schedule and settings configured in Site Settings.
 
 <Warning>
   JavaScript rendering increases the cost per crawled page by approximately 10x compared to standard crawling. Only enable it if the site requires JS to render its content. Most static or server-rendered sites do not need it.
