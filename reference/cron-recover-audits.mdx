@@ -1,0 +1,130 @@
+---
+title: "Cron: Recover Audits"
+description: "Technical reference for the daily stuck audit recovery job at /api/cron/recover-audits."
+---
+
+The Recover Audits cron job is a safety net that catches site audit crawls that get stuck. Normally, DataForSEO notifies the app via the [OnPage webhook](/reference/webhook-onpage) when a crawl finishes. If that webhook fails (network issue, timeout, bug), the audit would remain in `"crawling"` status forever. This job detects those stuck audits and either recovers them or marks them as failed.
+
+## Endpoint
+
+```
+GET /api/cron/recover-audits
+```
+
+**Schedule:** Daily at 5:00 AM UTC (`0 5 * * *`)
+**Max duration:** 120 seconds
+**Auth:** `Authorization: Bearer {CRON_SECRET}`
+
+## Who it affects
+
+**All stuck audits** regardless of the website owner's subscription status. If an audit is stuck, it should be resolved whether or not the user's subscription is currently active.
+
+## What it does
+
+The job finds all `site_audits` rows where:
+
+- `status` is `"crawling"`
+- `started_at` is more than **15 minutes** ago
+
+For each stuck audit, the job follows one of three paths:
+
+### Path 1 — No task ID
+
+If the audit has no `task_id` (the DataForSEO submission failed before a task was created), it is immediately marked as `"failed"`. There is nothing to recover.
+
+### Path 2 — Hard timeout (>3 hours)
+
+If the audit started more than **3 hours** ago, it is marked as `"failed"` regardless of DataForSEO status. Most crawls complete well within 3 hours — audits older than this are almost certainly broken.
+
+### Path 3 — Check DataForSEO
+
+For audits between 15 minutes and 3 hours old with a valid `task_id`, the job queries DataForSEO's OnPage summary endpoint to check the crawl progress:
+
+- **If `crawl_progress === "finished"`** — the crawl completed but the webhook was missed. The job calls `processAuditResults()` to extract issues, calculate the health score, and update the audit record to `"completed"`.
+- **If still crawling** — the audit is skipped and left in `"crawling"` status. It will be checked again on the next daily run.
+
+## Execution flow
+
+```
+1. Authenticate request (verify CRON_SECRET)
+2. Query site_audits: status = "crawling" AND started_at < 15 min ago
+3. If no stuck audits → return immediately
+4. For each stuck audit:
+   a. No task_id? → mark failed
+   b. Started > 3 hours ago? → mark failed
+   c. Otherwise → query DataForSEO summary endpoint
+      - Finished? → processAuditResults() → mark completed
+      - Still crawling? → skip (check next run)
+      - API error? → skip (check next run)
+5. Return 200 with counts
+```
+
+## Database tables
+
+| Table | Operation | Purpose |
+|---|---|---|
+| `site_audits` | Read | Find stuck audits (crawling > 15 min) |
+| `site_audits` | Write | Update status to "failed" or "completed" |
+| `site_audit_issues` | Write | Insert issues (via `processAuditResults()` on recovery) |
+
+## External APIs
+
+**DataForSEO OnPage API** — the `summary` endpoint is called to check if a crawl has finished. This is a lightweight read-only call that does not trigger any new crawls.
+
+## Error handling
+
+| Scenario | Behavior |
+|---|---|
+| DataForSEO API unreachable | Skip audit, try again next run |
+| `processAuditResults()` fails | Mark audit as failed |
+| Supabase query fails | Return 500 |
+
+The job is designed to be **safe to retry**. Skipped audits will be evaluated again on the next daily run. Audits that exceed the 3-hour hard timeout will eventually be marked as failed even if the API is unreachable.
+
+<Info>
+  The 15-minute threshold prevents the job from interfering with audits that just started. Most audits need at least 5-10 minutes to crawl, so the 15-minute buffer avoids false positives.
+</Info>
+
+## Response format
+
+```json
+{
+  "recovered": 1,
+  "failed": 2,
+  "skipped": 0
+}
+```
+
+- `recovered` — audits where the crawl was finished and results were successfully processed
+- `failed` — audits marked as failed (no task ID, timed out, or processing error)
+- `skipped` — audits still crawling or where the API check failed (will retry next run)
+
+When no audits are stuck:
+
+```json
+{
+  "recovered": 0,
+  "failed": 0,
+  "skipped": 0
+}
+```
+
+## Manual trigger
+
+```bash
+curl https://rank.pagelyft.studio/api/cron/recover-audits \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+Safe to run at any time. Useful after investigating a stuck crawl, or after fixing a webhook issue.
+
+## Supabase client used
+
+This job uses the Supabase **service role client** (`SUPABASE_SERVICE_ROLE_KEY`) to bypass Row Level Security.
+
+## Related
+
+- [Cron Schedules](/reference/cron-schedules) — overview of all cron jobs
+- [Cron: Run Scheduled Audits](/reference/cron-run-scheduled-audits) — the job that starts scheduled audits
+- [Webhook: OnPage](/reference/webhook-onpage) — the webhook this job acts as a backup for
+- [Environment Variables](/reference/environment-variables) — `CRON_SECRET`, `DATAFORSEO_*` configuration

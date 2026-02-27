@@ -1,0 +1,132 @@
+---
+title: "Cron: Sync GSC"
+description: "Technical reference for the daily Google Search Console data sync job at /api/cron/sync-gsc."
+---
+
+The Sync GSC cron job imports search analytics data from Google Search Console for all users who have connected their Google account with Search Console permissions. It refreshes OAuth tokens, fetches the last 3 days of search performance data, and rebuilds discovered keyword lists.
+
+## Endpoint
+
+```
+GET /api/cron/sync-gsc
+```
+
+**Schedule:** Daily at 7:30 AM UTC (`30 7 * * *`)
+**Max duration:** 300 seconds
+**Auth:** `Authorization: Bearer {CRON_SECRET}`
+
+## Who it affects
+
+Only users who meet **all** of the following criteria:
+
+1. Have an **active or trialing subscription**, or are flagged as **VIP**
+2. Have a **Google connection** stored in `google_connections` with the **Search Console scope** granted
+3. Have at least one **GSC property mapped** to a website in `gsc_properties`
+
+Users without a Google connection, or whose connection lacks Search Console scope, are skipped entirely.
+
+## What it does
+
+For each eligible Google connection, the job:
+
+1. **Refreshes the OAuth access token** — Google tokens expire after 1 hour. If the stored token is expired, the job uses the refresh token to get a new one and saves it back to the database.
+2. **Fetches search analytics** — Calls the Google Search Console API to retrieve performance data (clicks, impressions, CTR, position) for the last 3 days. GSC data can arrive up to 48-72 hours late, so fetching a 3-day window ensures late-arriving data is captured.
+3. **Rebuilds discovered keywords** — Processes the synced search analytics data to update the list of keywords Google has associated with each website.
+4. **Logs the sync job** — Records a row in `gsc_sync_jobs` with the sync status, date range, and row count.
+
+## Execution flow
+
+```
+1. Authenticate request (verify CRON_SECRET)
+2. Fetch active subscriber + VIP user IDs
+3. Fetch all Google connections with Search Console scope for active users
+4. For each connection:
+   a. Refresh OAuth access token
+      - If token refresh fails → create notification, skip connection
+      - If token was refreshed → save new token + expiry to DB
+   b. Fetch mapped GSC properties (gsc_properties table)
+      - If no mappings → skip connection
+   c. For each property mapping:
+      - Call syncSearchAnalytics(last 3 days)
+      - Call rebuildDiscoveredKeywords()
+      - Log to gsc_sync_jobs (success or failure)
+5. Return 200 with summary
+```
+
+## Database tables
+
+| Table | Operation | Purpose |
+|---|---|---|
+| `subscriptions` | Read | Find users with active/trialing plans |
+| `auth.users` | Read | Find VIP users |
+| `google_connections` | Read/Write | Read connection details; update refreshed access token |
+| `gsc_properties` | Read | Find website-to-GSC-property mappings |
+| `gsc_search_analytics` | Write | Upsert synced search performance rows |
+| `gsc_sync_jobs` | Write | Log sync job status and metadata |
+| `notifications` | Write | Create warning notification on token failure |
+
+## External APIs
+
+- **Google OAuth 2.0** — Token refresh using the stored `refresh_token`. Uses Google's token endpoint to obtain a new `access_token`.
+- **Google Search Console API** — Fetches search analytics data via the `searchanalytics.query` method. Requests the last 3 days of data grouped by query, page, country, and device.
+
+## Error handling
+
+### Token refresh failure
+
+If a user's Google token cannot be refreshed (revoked permissions, expired refresh token, etc.), the job:
+
+1. Creates an **in-app notification** warning the user to reconnect their Google account
+2. Logs the failure
+3. **Skips the entire connection** — no GSC data is fetched for any of that user's properties
+
+The notification links to **Settings > Integrations** where the user can re-authorize.
+
+### Sync failure per property
+
+If fetching data for a specific GSC property fails (API error, quota exceeded, etc.), the job:
+
+1. Logs the error to the `gsc_sync_jobs` table with status `"failed"` and the error message
+2. **Continues to the next property** — other properties for the same connection are not affected
+
+<Info>
+  GSC data is typically delayed by 24-72 hours. The cron fetches the last 3 days to ensure late-arriving data is captured. Running the cron more frequently would not yield fresher data.
+</Info>
+
+## Response format
+
+```json
+{
+  "connections": 3,
+  "results": [
+    { "userId": "abc-123", "websiteId": "def-456", "rows": 1240, "status": "synced" },
+    { "userId": "abc-123", "websiteId": "ghi-789", "rows": 830, "status": "synced" },
+    { "userId": "jkl-012", "status": "token_refresh_failed" },
+    { "userId": "mno-345", "status": "no_mappings" }
+  ]
+}
+```
+
+## Manual trigger
+
+```bash
+curl https://rank.pagelyft.studio/api/cron/sync-gsc \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+Use this after a user connects Google Search Console for the first time, or to retry after a failed sync run.
+
+## Supabase client used
+
+This job uses the Supabase **service role client** (`SUPABASE_SERVICE_ROLE_KEY`) to bypass Row Level Security. It reads all Google connections regardless of owner and writes data for all mapped websites.
+
+<Warning>
+  This job handles sensitive Google OAuth tokens. Never expose this endpoint publicly or log access tokens. The auth check on `CRON_SECRET` must remain in place.
+</Warning>
+
+## Related
+
+- [Cron Schedules](/reference/cron-schedules) — overview of all cron jobs
+- [Cron: Sync GA4](/reference/cron-sync-ga4) — the equivalent job for Google Analytics 4
+- [Cron: Aggregate GSC](/reference/cron-aggregate-gsc) — compresses old GSC data monthly
+- [Environment Variables](/reference/environment-variables) — `CRON_SECRET`, Google OAuth configuration

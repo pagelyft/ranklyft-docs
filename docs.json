@@ -29,6 +29,7 @@
     "tabs": [
       {
         "tab": "Getting Started",
+        "public": true,
         "groups": [
           {
             "group": "Introduction",
@@ -49,6 +50,7 @@
       },
       {
         "tab": "Features",
+        "public": true,
         "groups": [
           {
             "group": "Website reports",
@@ -112,6 +114,11 @@
             "pages": [
               "reference/cron-refresh-websites",
               "reference/cron-track-positions",
+              "reference/cron-run-scheduled-audits",
+              "reference/cron-sync-gsc",
+              "reference/cron-sync-ga4",
+              "reference/cron-aggregate-gsc",
+              "reference/cron-recover-audits",
               "reference/webhook-serp",
               "reference/webhook-onpage"
             ]

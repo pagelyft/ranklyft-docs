@@ -3,21 +3,29 @@ title: "Cron Schedules"
 description: "Overview of all scheduled background jobs, their triggers, and what each one does."
 ---
 
-RankLyft runs two cron jobs configured in `vercel.json`. Both jobs run in the Vercel Production environment only. They do not run on Preview or Development deployments.
+RankLyft runs six cron jobs configured in `vercel.ts`. All jobs run in the Vercel Production environment only. They do not run on Preview or Development deployments.
 
 ## Cron jobs
 
 | Job | Route | Schedule | Frequency |
 |---|---|---|---|
-| Refresh Websites | `/api/cron/refresh-websites` | `59 4 * * 1` | Every Monday at 4:59 AM UTC |
-| Track Positions | `/api/cron/track-positions` | `0 6 * * *` | Every day at 6:00 AM UTC |
+| [Recover Audits](/reference/cron-recover-audits) | `/api/cron/recover-audits` | `0 5 * * *` | Every day at 5:00 AM UTC |
+| [Refresh Websites](/reference/cron-refresh-websites) | `/api/cron/refresh-websites` | `59 4 * * 1` | Every Monday at 4:59 AM UTC |
+| [Track Positions](/reference/cron-track-positions) | `/api/cron/track-positions` | `0 6 * * *` | Every day at 6:00 AM UTC |
+| [Run Scheduled Audits](/reference/cron-run-scheduled-audits) | `/api/cron/run-scheduled-audits` | `0 7 * * *` | Every day at 7:00 AM UTC |
+| [Sync GSC](/reference/cron-sync-gsc) | `/api/cron/sync-gsc` | `30 7 * * *` | Every day at 7:30 AM UTC |
+| [Aggregate GSC](/reference/cron-aggregate-gsc) | `/api/cron/aggregate-gsc` | `0 3 1 * *` | 1st of each month at 3:00 AM UTC |
+
+<Info>
+  The [Sync GA4](/reference/cron-sync-ga4) job exists but is not yet scheduled in `vercel.ts`. It can be triggered manually.
+</Info>
 
 ## Authentication
 
-Both endpoints require a `Authorization: Bearer {CRON_SECRET}` header. Vercel injects this header automatically when triggering cron jobs. If you call these endpoints manually (for testing or a forced run), you must include the header yourself.
+All endpoints require an `Authorization: Bearer {CRON_SECRET}` header. Vercel injects this header automatically when triggering cron jobs. If you call these endpoints manually (for testing or a forced run), you must include the header yourself.
 
 ```bash
-curl -X POST https://rank.pagelyft.studio/api/cron/refresh-websites \
+curl https://rank.pagelyft.studio/api/cron/refresh-websites \
   -H "Authorization: Bearer $CRON_SECRET"
 ```
 
@@ -25,78 +33,143 @@ curl -X POST https://rank.pagelyft.studio/api/cron/refresh-websites \
   Never expose `CRON_SECRET` in client-side code or commit it to version control. Treat it as a password.
 </Warning>
 
-## Refresh Websites — weekly
+## What each job does
 
-**Route:** `POST /api/cron/refresh-websites`
-**Schedule:** Mondays at 4:59 AM UTC
-**Max duration:** 300 seconds
+### Recover Audits — daily at 5:00 AM UTC
 
-Iterates through every website in the database sequentially and re-fetches DataForSEO data for each one. The job processes websites one at a time to avoid hitting DataForSEO rate limits. For each website it fetches:
+Catches site audit crawls that got stuck in `"crawling"` status. Checks DataForSEO to see if the crawl actually finished (webhook was missed) and processes results if so. Marks audits older than 3 hours as failed.
 
-- Domain overview (authority, traffic estimate, backlink count)
-- Top 100 ranked keywords
-- Top 50 relevant pages
-- Historical traffic data
-- Backlinks summary (only if `NEXT_PUBLIC_FEATURE_BACKLINKS` is enabled)
+See [Cron: Recover Audits](/reference/cron-recover-audits) for full details.
+
+### Refresh Websites — weekly on Mondays at 4:59 AM UTC
+
+Re-fetches all DataForSEO data for every active website: domain overview, ranked keywords, relevant pages, historical data, backlinks summary, and tracked competitor metrics.
 
 See [Cron: Refresh Websites](/reference/cron-refresh-websites) for full details.
 
-## Track Positions — daily
+### Track Positions — daily at 6:00 AM UTC
 
-**Route:** `POST /api/cron/track-positions`
-**Schedule:** Daily at 6:00 AM UTC
-**Max duration:** 300 seconds
-
-Submits SERP tracking tasks to DataForSEO in batches of 100 keywords. Tasks are submitted asynchronously — DataForSEO processes them and delivers results via webhook rather than returning them inline. The job also checks each website's audit schedule and triggers site crawls that are due.
+Submits SERP tracking tasks to DataForSEO for all tracked keywords in batches of 100. Results arrive asynchronously via the [SERP webhook](/reference/webhook-serp).
 
 See [Cron: Track Positions](/reference/cron-track-positions) for full details.
 
+### Run Scheduled Audits — daily at 7:00 AM UTC
+
+Checks each website's `audit_schedule` setting and triggers a new site audit crawl if one is due today (based on daily, weekly, or monthly configuration). Uses the saved `audit_settings` for crawl parameters.
+
+See [Cron: Run Scheduled Audits](/reference/cron-run-scheduled-audits) for full details.
+
+### Sync GSC — daily at 7:30 AM UTC
+
+Imports the last 3 days of Google Search Console search analytics data for all users with a connected GSC account. Refreshes OAuth tokens, syncs data, and rebuilds discovered keyword lists.
+
+See [Cron: Sync GSC](/reference/cron-sync-gsc) for full details.
+
+### Aggregate GSC — monthly on the 1st at 3:00 AM UTC
+
+Storage optimization. Compresses daily GSC rows older than 2 years into weekly summaries (summed clicks/impressions, weighted average position).
+
+See [Cron: Aggregate GSC](/reference/cron-aggregate-gsc) for full details.
+
 ## Execution order
 
-The two jobs do not overlap under normal conditions. Refresh Websites runs on Mondays at 4:59 AM UTC and finishes well before the Track Positions job fires at 6:00 AM UTC.
+The jobs are staggered to avoid overlap and ensure resources are available. On a typical day, the daily jobs run in this order:
+
+```
+Daily timeline (UTC):
+05:00  Recover Audits (120s max)
+06:00  Track Positions (300s max)
+07:00  Run Scheduled Audits (300s max)
+07:30  Sync GSC (300s max)
+```
+
+On Mondays, Refresh Websites runs before the daily jobs:
 
 ```
 Monday timeline (UTC):
-04:59  Refresh Websites starts
-05:xx  Refresh Websites finishes (≤ 5 min for typical load)
+04:59  Refresh Websites starts (300s max)
+05:00  Recover Audits starts
 06:00  Track Positions starts
-06:xx  Track Positions finishes
+07:00  Run Scheduled Audits starts
+07:30  Sync GSC starts
 ```
 
-On non-Monday days, only Track Positions runs.
+On the 1st of each month, Aggregate GSC also runs:
 
-## `vercel.json` configuration
+```
+1st-of-month timeline (UTC):
+03:00  Aggregate GSC (300s max)
+05:00  Recover Audits
+06:00  Track Positions
+07:00  Run Scheduled Audits
+07:30  Sync GSC
+```
 
-```json
-{
-  "crons": [
-    {
-      "path": "/api/cron/refresh-websites",
-      "schedule": "59 4 * * 1"
-    },
-    {
-      "path": "/api/cron/track-positions",
-      "schedule": "0 6 * * *"
-    }
-  ]
-}
+## Subscription filtering
+
+Most jobs only process websites belonging to users with an active subscription or VIP status:
+
+| Job | Requires active subscription? |
+|---|---|
+| Refresh Websites | Yes |
+| Track Positions | Yes |
+| Run Scheduled Audits | Yes |
+| Sync GSC | Yes |
+| Sync GA4 | Yes |
+| Aggregate GSC | No (all data) |
+| Recover Audits | No (all stuck audits) |
+
+## `vercel.ts` configuration
+
+```typescript
+import type { VercelConfig } from "@vercel/config/v1";
+export const config: VercelConfig = {
+  crons: [
+    { path: "/api/cron/refresh-websites", schedule: "59 4 * * 1" },
+    { path: "/api/cron/track-positions", schedule: "0 6 * * *" },
+    { path: "/api/cron/run-scheduled-audits", schedule: "0 7 * * *" },
+    { path: "/api/cron/sync-gsc", schedule: "30 7 * * *" },
+    { path: "/api/cron/aggregate-gsc", schedule: "0 3 1 * *" },
+    { path: "/api/cron/recover-audits", schedule: "0 5 * * *" },
+  ],
+};
 ```
 
 <Info>
-  Vercel cron jobs use standard cron syntax. The timezone is always UTC. Vercel delivers the request to your serverless function as an HTTP POST with the `Authorization` header set to `Bearer {CRON_SECRET}`.
+  Vercel cron jobs use standard cron syntax. The timezone is always UTC. Vercel delivers the request to your serverless function as an HTTP GET with the `Authorization` header set to `Bearer {CRON_SECRET}`.
 </Info>
 
 ## Manual execution
 
-You can trigger either job manually from the command line. This is useful after adding a batch of new websites or after a failed run.
+You can trigger any job manually from the command line. This is useful after adding new websites, fixing a failed run, or testing changes.
 
 ```bash
-# Trigger refresh-websites manually
-curl -X POST https://rank.pagelyft.studio/api/cron/refresh-websites \
+# Weekly data refresh
+curl https://rank.pagelyft.studio/api/cron/refresh-websites \
   -H "Authorization: Bearer $CRON_SECRET"
 
-# Trigger track-positions manually
-curl -X POST https://rank.pagelyft.studio/api/cron/track-positions \
+# Daily position tracking
+curl https://rank.pagelyft.studio/api/cron/track-positions \
+  -H "Authorization: Bearer $CRON_SECRET"
+
+# Scheduled site audits
+curl https://rank.pagelyft.studio/api/cron/run-scheduled-audits \
+  -H "Authorization: Bearer $CRON_SECRET"
+
+# Google Search Console sync
+curl https://rank.pagelyft.studio/api/cron/sync-gsc \
+  -H "Authorization: Bearer $CRON_SECRET"
+
+# Google Analytics 4 sync (not scheduled yet)
+curl https://rank.pagelyft.studio/api/cron/sync-ga4 \
+  -H "Authorization: Bearer $CRON_SECRET"
+
+# GSC data aggregation
+curl https://rank.pagelyft.studio/api/cron/aggregate-gsc \
+  -H "Authorization: Bearer $CRON_SECRET"
+
+# Stuck audit recovery
+curl https://rank.pagelyft.studio/api/cron/recover-audits \
   -H "Authorization: Bearer $CRON_SECRET"
 ```
 

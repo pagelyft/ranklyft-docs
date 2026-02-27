@@ -1,0 +1,133 @@
+---
+title: "Cron: Aggregate GSC"
+description: "Technical reference for the monthly GSC data aggregation job at /api/cron/aggregate-gsc."
+---
+
+The Aggregate GSC cron job is a storage optimization that runs once per month. It compresses daily Google Search Console rows older than 2 years into weekly summaries, reducing the number of rows in the `gsc_search_analytics` table without losing meaningful trend data.
+
+## Endpoint
+
+```
+GET /api/cron/aggregate-gsc
+```
+
+**Schedule:** 1st of each month at 3:00 AM UTC (`0 3 1 * *`)
+**Max duration:** 300 seconds
+**Auth:** `Authorization: Bearer {CRON_SECRET}`
+
+## Who it affects
+
+**All websites** with GSC data older than 2 years. Unlike most other cron jobs, this one does **not** filter by subscription status — it processes all data regardless of the website owner's plan. This ensures storage optimization applies across the entire database.
+
+## What it does
+
+The job finds daily `gsc_search_analytics` rows where:
+
+- `date` is older than 2 years from today
+- `is_aggregated` is `false` (not already compressed)
+
+For each website with qualifying rows, it:
+
+1. **Groups daily rows by ISO week** — rows are bucketed by the Monday of their ISO week, preserving the dimensions (query, page, country, device)
+2. **Aggregates metrics** — clicks and impressions are summed; position is calculated as an impression-weighted average to maintain statistical accuracy
+3. **Upserts weekly rows** — inserts new aggregated rows with `is_aggregated = true` and the Monday date as the row date
+4. **Deletes original daily rows** — only after all upserts succeed for that website
+
+### Aggregation formula
+
+| Metric | Aggregation method |
+|---|---|
+| Clicks | Sum of daily clicks |
+| Impressions | Sum of daily impressions |
+| CTR | `clicks / impressions` (recalculated) |
+| Position | `sum(position * impressions) / sum(impressions)` (weighted average) |
+
+<Info>
+  Position is weighted by impressions rather than simply averaged. This gives more weight to days when the keyword appeared in more search results, producing a more accurate representation of the week's ranking.
+</Info>
+
+## Execution flow
+
+```
+1. Authenticate request (verify CRON_SECRET)
+2. Find cutoff date (2 years ago from today)
+3. Query gsc_search_analytics for website_ids with old, non-aggregated rows
+4. For each website:
+   a. Fetch all old daily rows (up to 10,000)
+   b. Group rows by ISO week + query + page + country + device
+   c. Calculate weekly aggregated metrics
+   d. Upsert aggregated rows in batches of 500
+      - If any upsert batch fails → skip deletion, move to next website
+   e. Delete original daily rows in batches of 500
+5. Return 200 with summary
+```
+
+## Database tables
+
+| Table | Operation | Purpose |
+|---|---|---|
+| `gsc_search_analytics` | Read | Find old daily rows (date < 2 years, not aggregated) |
+| `gsc_search_analytics` | Upsert | Insert weekly aggregated rows |
+| `gsc_search_analytics` | Delete | Remove original daily rows after successful aggregation |
+
+No other tables are accessed. No external APIs are called.
+
+## Error handling
+
+### Data safety
+
+The job uses a **two-phase approach** to prevent data loss:
+
+1. First, all aggregated rows are upserted
+2. Only if **all upserts succeed** for a website are the original daily rows deleted
+
+If any upsert batch fails for a website, the deletion step is skipped entirely for that website. The original daily rows remain intact. The job moves to the next website.
+
+<Warning>
+  If the job times out (300s limit) mid-way through processing a website, some aggregated rows may be upserted without the originals being deleted. This is safe — the next monthly run will find the same originals (still `is_aggregated = false`) and attempt the process again. The upsert uses `ON CONFLICT` to avoid duplicating aggregated rows.
+</Warning>
+
+### Batch processing
+
+Both upserts and deletes are processed in batches of 500 rows to avoid hitting Supabase request size limits. Each website can have up to 10,000 daily rows processed per run.
+
+## Response format
+
+```json
+{
+  "websites": 3,
+  "aggregated": 2100,
+  "deleted": 14700
+}
+```
+
+- `websites` — number of websites that had old data to process
+- `aggregated` — total weekly summary rows created
+- `deleted` — total daily rows removed
+
+When no data qualifies for aggregation:
+
+```json
+{
+  "message": "No data to aggregate"
+}
+```
+
+## Manual trigger
+
+```bash
+curl https://rank.pagelyft.studio/api/cron/aggregate-gsc \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+This is safe to run at any time. It will only process data older than 2 years that hasn't been aggregated yet.
+
+## Supabase client used
+
+This job uses the Supabase **service role client** (`SUPABASE_SERVICE_ROLE_KEY`) to bypass Row Level Security.
+
+## Related
+
+- [Cron Schedules](/reference/cron-schedules) — overview of all cron jobs
+- [Cron: Sync GSC](/reference/cron-sync-gsc) — the daily job that creates the daily rows this job aggregates
+- [Environment Variables](/reference/environment-variables) — `CRON_SECRET` configuration

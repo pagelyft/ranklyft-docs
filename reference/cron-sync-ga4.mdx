@@ -1,0 +1,110 @@
+---
+title: "Cron: Sync GA4"
+description: "Technical reference for the Google Analytics 4 data sync job at /api/cron/sync-ga4."
+---
+
+The Sync GA4 cron job imports traffic and engagement data from Google Analytics 4 for all users who have connected their Google account with Analytics permissions. It follows the same pattern as the [GSC sync job](/reference/cron-sync-gsc) — refresh tokens, fetch recent data, log results.
+
+<Warning>
+  This cron job exists but is **not yet scheduled** in `vercel.ts`. It must be added to the cron configuration before it will run automatically. Currently it can only be triggered manually.
+</Warning>
+
+## Endpoint
+
+```
+GET /api/cron/sync-ga4
+```
+
+**Schedule:** Not yet scheduled (add to `vercel.ts` to enable)
+**Max duration:** 300 seconds
+**Auth:** `Authorization: Bearer {CRON_SECRET}`
+
+## Who it affects
+
+Only users who meet **all** of the following criteria:
+
+1. Have an **active or trialing subscription**, or are flagged as **VIP**
+2. Have a **Google connection** with the **Analytics scope** granted
+3. Have at least one **GA4 property mapped** to a website in `ga4_properties`
+
+## What it does
+
+For each eligible Google connection, the job:
+
+1. **Refreshes the OAuth access token** — same as the GSC sync. Saves updated tokens to the database.
+2. **Fetches daily rows** — Calls the Google Analytics Data API for the last 3 days (GA4 data can arrive late, similar to GSC).
+3. **Fetches aggregate rows** — Fetches the last 30 days of page-level and country-level aggregated data. The 30-day window matches the default date range on the Traffic page in the app.
+4. **Logs the sync job** — Records a row in `ga4_sync_jobs`.
+
+## Execution flow
+
+```
+1. Authenticate request (verify CRON_SECRET)
+2. Fetch active subscriber + VIP user IDs
+3. Fetch all Google connections with Analytics scope for active users
+4. For each connection:
+   a. Refresh OAuth access token
+      - If token refresh fails → create notification, skip connection
+      - If token was refreshed → save new token + expiry to DB
+   b. Fetch mapped GA4 properties (ga4_properties table)
+      - If no mappings → skip connection
+   c. For each property mapping:
+      - Call syncGa4Data(daily: last 3 days, aggregate: last 30 days)
+      - Log to ga4_sync_jobs (success or failure)
+5. Return 200 with summary
+```
+
+## Database tables
+
+| Table | Operation | Purpose |
+|---|---|---|
+| `subscriptions` | Read | Find users with active/trialing plans |
+| `auth.users` | Read | Find VIP users |
+| `google_connections` | Read/Write | Read connection details; update refreshed access token |
+| `ga4_properties` | Read | Find website-to-GA4-property mappings |
+| GA4 data tables | Write | Upsert synced daily and aggregate rows |
+| `ga4_sync_jobs` | Write | Log sync job status and metadata |
+| `notifications` | Write | Create warning notification on token failure |
+
+## External APIs
+
+- **Google OAuth 2.0** — Token refresh using the stored `refresh_token`
+- **Google Analytics Data API** — Fetches traffic data (sessions, pageviews, engagement, etc.) using the `runReport` method
+
+## Error handling
+
+Identical to the [GSC sync job](/reference/cron-sync-gsc):
+
+- **Token refresh failure** → in-app notification + skip entire connection
+- **Sync failure per property** → logged to `ga4_sync_jobs` as failed, continues to next property
+
+## Response format
+
+```json
+{
+  "connections": 2,
+  "results": [
+    { "userId": "abc-123", "websiteId": "def-456", "rows": 540, "status": "synced" },
+    { "userId": "jkl-012", "status": "token_refresh_failed" }
+  ]
+}
+```
+
+## Manual trigger
+
+```bash
+curl https://rank.pagelyft.studio/api/cron/sync-ga4 \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+Since this job is not yet scheduled, manual triggering is the only way to run it currently.
+
+## Supabase client used
+
+This job uses the Supabase **service role client** (`SUPABASE_SERVICE_ROLE_KEY`) to bypass Row Level Security.
+
+## Related
+
+- [Cron Schedules](/reference/cron-schedules) — overview of all cron jobs
+- [Cron: Sync GSC](/reference/cron-sync-gsc) — the equivalent job for Google Search Console
+- [Environment Variables](/reference/environment-variables) — `CRON_SECRET`, Google OAuth configuration

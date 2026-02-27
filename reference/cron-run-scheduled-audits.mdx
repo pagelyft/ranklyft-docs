@@ -1,0 +1,134 @@
+---
+title: "Cron: Run Scheduled Audits"
+description: "Technical reference for the daily site audit scheduling job at /api/cron/run-scheduled-audits."
+---
+
+The Run Scheduled Audits cron job checks every active website's configured audit schedule and triggers a new site audit crawl if one is due today. It reads the `audit_schedule` and `audit_settings` columns from the `websites` table, which are set by the user in [Site Settings > Crawl Settings](/reference/audit-settings) or the Audit Settings dialog.
+
+## Endpoint
+
+```
+GET /api/cron/run-scheduled-audits
+```
+
+**Schedule:** Daily at 7:00 AM UTC (`0 7 * * *`)
+**Max duration:** 300 seconds
+**Auth:** `Authorization: Bearer {CRON_SECRET}`
+
+## Who it affects
+
+Only websites belonging to users with an **active or trialing subscription**, or users flagged as **VIP** (`user_metadata.vip = true`). Within that set, only websites that have a non-null `audit_schedule` value other than `"once"` are evaluated.
+
+Websites without a schedule, or with `"once"` (manual only), are skipped entirely — no API calls are made for them.
+
+## What it does
+
+The job iterates through eligible websites and evaluates their schedule against the current UTC date. If the schedule matches today, and there is no crawl already in progress, the job submits a new audit task to DataForSEO using the website's saved crawl settings.
+
+### Schedule evaluation
+
+| `audit_schedule` value | Triggers when |
+|---|---|
+| `"once"` | Never (manual only) |
+| `"daily"` | Every day |
+| `"weekly_monday"` through `"weekly_sunday"` | When the current UTC day of the week matches |
+| `"monthly"` | On the 1st of each month (UTC) |
+
+### Crawl settings used
+
+The audit is started with the website's saved `audit_settings` JSON, which includes:
+
+| Setting | Default | Description |
+|---|---|---|
+| `maxCrawlPages` | 500 | Maximum pages to crawl per audit |
+| `maxCrawlDepth` | Unlimited | How many link levels deep to follow |
+| `allowSubdomains` | `false` | Include subdomain pages in the crawl |
+| `enableJavascript` | `false` | Render JavaScript (10x cost per page) |
+| `respectSitemap` | `true` | Prioritize URLs from sitemap.xml |
+
+## Execution flow
+
+```
+1. Authenticate request (verify CRON_SECRET)
+2. Fetch active subscriber + VIP user IDs
+3. Fetch all non-deleted websites with audit_schedule set
+4. Filter to active subscribers only
+5. Determine today's UTC day name and whether it's the 1st
+6. For each website:
+   a. Read audit_schedule — skip if "once" or null
+   b. Evaluate schedule against today — skip if not due
+   c. Check site_audits for an active crawl — skip if one exists
+   d. Call startAudit(websiteId, domain, audit_settings)
+   e. Log result (started / skipped / failed)
+7. Return 200 with summary
+```
+
+## Database tables
+
+| Table | Operation | Purpose |
+|---|---|---|
+| `subscriptions` | Read | Find users with active/trialing plans |
+| `auth.users` | Read | Find VIP users |
+| `websites` | Read | Get audit_schedule and audit_settings |
+| `site_audits` | Read | Check for active crawls |
+| `site_audits` | Write | Insert new audit record (via `startAudit()`) |
+
+## External APIs
+
+**DataForSEO OnPage API** — a crawl task is submitted for each due website. The task includes a pingback URL so DataForSEO notifies the app when the crawl finishes:
+
+```
+Pingback URL:
+https://rank.pagelyft.studio/api/webhooks/dataforseo/onpage?secret={DATAFORSEO_WEBHOOK_SECRET}&id=$id&tag=$tag
+```
+
+The `tag` contains `{ type: "onpage", websiteId, auditId }` so the webhook can route results back to the correct audit record.
+
+## Error handling
+
+Errors on individual websites do not abort the job. If starting an audit for one website fails (DataForSEO API error, database error, etc.), the error is logged and the job continues to the next website.
+
+The endpoint always returns HTTP 200, even when individual audits fail. Check Vercel function logs to diagnose per-website failures.
+
+<Info>
+  If the job times out before processing all websites, remaining sites will be checked again the next day. Daily-scheduled sites will still get their audit — just delayed by one day.
+</Info>
+
+## Response format
+
+```json
+{
+  "checked": 8,
+  "audits": [
+    { "domain": "example.com", "status": "started" },
+    { "domain": "another.com", "status": "skipped (already crawling)" }
+  ]
+}
+```
+
+## Manual trigger
+
+```bash
+curl https://rank.pagelyft.studio/api/cron/run-scheduled-audits \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+<Tip>
+  Triggering manually evaluates schedules against the current UTC date. If you want to force-start an audit regardless of schedule, use the "New Audit" button on the Site Audit page instead.
+</Tip>
+
+## Supabase client used
+
+This job uses the Supabase **service role client** (`SUPABASE_SERVICE_ROLE_KEY`) to bypass Row Level Security. It reads all websites regardless of owner and writes audit records directly.
+
+<Warning>
+  Do not expose this endpoint publicly or remove the auth check. A successful unauthenticated call would trigger DataForSEO OnPage crawls for every eligible website, consuming API credits.
+</Warning>
+
+## Related
+
+- [Cron Schedules](/reference/cron-schedules) — overview of all cron jobs
+- [Cron: Recover Audits](/reference/cron-recover-audits) — recovers audits that get stuck
+- [Webhook: OnPage](/reference/webhook-onpage) — receives crawl completion results
+- [Audit Settings](/reference/audit-settings) — schedule and crawl configuration reference
+- [Environment Variables](/reference/environment-variables) — `CRON_SECRET`, `DATAFORSEO_*` configuration
